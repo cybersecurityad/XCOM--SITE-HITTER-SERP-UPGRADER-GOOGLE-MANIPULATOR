@@ -17,7 +17,8 @@ FEATURES:
 
 import sys
 import os
-from typing import Dict, Any, Optional
+import time
+from typing import Dict, Any, Optional, List
 
 # Track initialization status
 _initialization_status = {
@@ -32,11 +33,20 @@ _initialization_status = {
 # Global instances
 _logger_instances = {}
 
-def initialize_full_modules_logger(verbose: bool = False) -> bool:
+def initialize_full_modules_logger(verbose: bool = False, read_existing: bool = False) -> bool:
     """Initialize the full modules code logger"""
     try:
         from full_modules_code_logger import FullModulesCodeLogger
         logger = FullModulesCodeLogger()
+        
+        if read_existing:
+            if verbose:
+                print("📖 Reading existing modules log...")
+            existing_log = logger.read_existing_log()
+            if existing_log and verbose:
+                print(f"   Found {existing_log['metadata']['total_modules']} existing modules")
+        
+        # Always do a fresh scan to update with any changes
         logger.scan_and_log_all_modules()
         _logger_instances['full_modules_logger'] = logger
         _initialization_status['full_modules_logger'] = True
@@ -63,11 +73,22 @@ def initialize_workspace_logger(verbose: bool = False) -> bool:
             print(f"⚠️ Workspace logger failed: {e}")
         return False
 
-def initialize_chat_agent_tracker(verbose: bool = False) -> bool:
+def initialize_chat_agent_tracker(verbose: bool = False, read_existing: bool = False) -> bool:
     """Initialize the chat & agent history tracker"""
     try:
         from auto_chat_tracker import get_auto_tracker
         tracker = get_auto_tracker()
+        
+        if read_existing and verbose:
+            # Show existing conversation count
+            try:
+                if tracker.db:
+                    history = tracker.db.search_history("", limit=5)
+                    if history:
+                        print(f"📖 Found {len(history)} recent chat history entries")
+            except:
+                pass
+        
         if not tracker.conversation_active:
             tracker.start_conversation("Auto-initialized workspace session")
         _logger_instances['chat_agent_tracker'] = tracker
@@ -80,11 +101,21 @@ def initialize_chat_agent_tracker(verbose: bool = False) -> bool:
             print(f"⚠️ Chat & agent tracker failed: {e}")
         return False
 
-def initialize_terminal_history(verbose: bool = False) -> bool:
+def initialize_terminal_history(verbose: bool = False, read_existing: bool = False) -> bool:
     """Initialize the terminal history database"""
     try:
         from terminal_history_db import get_terminal_history_db
         db = get_terminal_history_db(verbose=verbose)
+        
+        if read_existing and verbose:
+            # Show existing terminal commands count
+            try:
+                recent_commands = db.search_terminal_history("", limit=5)
+                if recent_commands:
+                    print(f"📖 Found {len(recent_commands)} recent terminal commands")
+            except:
+                pass
+        
         _logger_instances['terminal_history'] = db
         _initialization_status['terminal_history'] = True
         if verbose:
@@ -110,7 +141,7 @@ def initialize_terminal_wrapper(verbose: bool = False) -> bool:
             print(f"⚠️ Terminal command wrapper failed: {e}")
         return False
 
-def initialize_all_loggers(verbose: bool = False) -> Dict[str, bool]:
+def initialize_all_loggers(verbose: bool = False, read_existing: bool = False) -> Dict[str, bool]:
     """Initialize all logging systems"""
     
     if _initialization_status['auto_init_completed']:
@@ -120,22 +151,24 @@ def initialize_all_loggers(verbose: bool = False) -> Dict[str, bool]:
     
     if verbose:
         print("🚀 INITIALIZING COMPREHENSIVE LOGGING SYSTEM")
+        if read_existing:
+            print("📖 Reading existing logs during initialization...")
         print("=" * 55)
     
     # Initialize each logging system
     results = {}
     
     # 1. Full modules code logger
-    results['full_modules_logger'] = initialize_full_modules_logger(verbose)
+    results['full_modules_logger'] = initialize_full_modules_logger(verbose, read_existing)
     
     # 2. Workspace activity logger
     results['workspace_logger'] = initialize_workspace_logger(verbose)
     
     # 3. Chat & agent history tracker
-    results['chat_agent_tracker'] = initialize_chat_agent_tracker(verbose)
+    results['chat_agent_tracker'] = initialize_chat_agent_tracker(verbose, read_existing)
     
     # 4. Terminal history database
-    results['terminal_history'] = initialize_terminal_history(verbose)
+    results['terminal_history'] = initialize_terminal_history(verbose, read_existing)
     
     # 5. Terminal command wrapper
     results['terminal_wrapper'] = initialize_terminal_wrapper(verbose)
@@ -150,6 +183,8 @@ def initialize_all_loggers(verbose: bool = False) -> Dict[str, bool]:
     if verbose:
         print("=" * 55)
         print(f"📊 INITIALIZATION COMPLETE: {successful}/{total} systems active")
+        if read_existing:
+            print("📖 Existing logs have been read and loaded")
         if successful == total:
             print("✅ ALL LOGGING SYSTEMS OPERATIONAL")
         else:
@@ -196,6 +231,187 @@ def get_terminal_history():
 def get_terminal_wrapper():
     """Get the terminal command wrapper instance"""
     return get_logger_instance('terminal_wrapper')
+
+# New functions for reading existing logs
+def read_all_existing_logs(verbose: bool = True) -> Dict[str, Any]:
+    """Read all existing logs from all systems"""
+    logs = {}
+    
+    if verbose:
+        print("📖 READING ALL EXISTING LOGS")
+        print("=" * 40)
+    
+    # Read modules log
+    try:
+        modules_logger = get_modules_logger()
+        if modules_logger:
+            existing_log = modules_logger.read_existing_log()
+            if existing_log:
+                logs['modules'] = existing_log
+                if verbose:
+                    print(f"📚 Modules: {existing_log['metadata']['total_modules']} files")
+    except Exception as e:
+        if verbose:
+            print(f"⚠️ Modules log read failed: {e}")
+    
+    # Read terminal history
+    try:
+        terminal_history = get_terminal_history()
+        if terminal_history:
+            recent_commands = terminal_history.search_terminal_history("", limit=100)
+            if recent_commands:
+                logs['terminal'] = recent_commands
+                if verbose:
+                    print(f"💻 Terminal: {len(recent_commands)} recent commands")
+    except Exception as e:
+        if verbose:
+            print(f"⚠️ Terminal history read failed: {e}")
+    
+    # Read chat history
+    try:
+        chat_tracker = get_chat_tracker()
+        if chat_tracker and chat_tracker.db:
+            chat_history = chat_tracker.db.search_history("", limit=100)
+            if chat_history:
+                logs['chat'] = chat_history
+                if verbose:
+                    print(f"💬 Chat: {len(chat_history)} history entries")
+    except Exception as e:
+        if verbose:
+            print(f"⚠️ Chat history read failed: {e}")
+    
+    # Read workspace activity
+    try:
+        workspace_logger = get_workspace_logger()
+        if workspace_logger and hasattr(workspace_logger, 'get_recent_activity'):
+            activity = workspace_logger.get_recent_activity(limit=100)
+            if activity:
+                logs['workspace'] = activity
+                if verbose:
+                    print(f"🔍 Workspace: {len(activity)} recent activities")
+    except Exception as e:
+        if verbose:
+            print(f"⚠️ Workspace activity read failed: {e}")
+    
+    if verbose:
+        print("=" * 40)
+        print(f"📊 Total log categories read: {len(logs)}")
+    
+    return logs
+
+def search_all_logs(query: str, limit: int = 20, verbose: bool = True) -> Dict[str, List]:
+    """Search across all logging systems"""
+    results = {}
+    
+    if verbose:
+        print(f"🔍 SEARCHING ALL LOGS FOR: '{query}'")
+        print("=" * 50)
+    
+    # Search terminal history
+    try:
+        terminal_history = get_terminal_history()
+        if terminal_history:
+            terminal_results = terminal_history.search_terminal_history(query, limit)
+            if terminal_results:
+                results['terminal'] = terminal_results
+                if verbose:
+                    print(f"💻 Terminal: {len(terminal_results)} matches")
+    except Exception as e:
+        if verbose:
+            print(f"⚠️ Terminal search failed: {e}")
+    
+    # Search chat history
+    try:
+        chat_tracker = get_chat_tracker()
+        if chat_tracker and chat_tracker.db:
+            chat_results = chat_tracker.db.search_history(query, limit)
+            if chat_results:
+                results['chat'] = chat_results
+                if verbose:
+                    print(f"💬 Chat: {len(chat_results)} matches")
+    except Exception as e:
+        if verbose:
+            print(f"⚠️ Chat search failed: {e}")
+    
+    # Search modules
+    try:
+        modules_logger = get_modules_logger()
+        if modules_logger:
+            module_list = modules_logger.list_all_modules()
+            module_matches = [m for m in module_list if query.lower() in m.lower()]
+            if module_matches:
+                results['modules'] = module_matches
+                if verbose:
+                    print(f"📚 Modules: {len(module_matches)} matches")
+    except Exception as e:
+        if verbose:
+            print(f"⚠️ Module search failed: {e}")
+    
+    if verbose:
+        print("=" * 50)
+        total_matches = sum(len(matches) for matches in results.values())
+        print(f"📊 Total matches found: {total_matches}")
+    
+    return results
+
+def get_comprehensive_summary(verbose: bool = True) -> Dict[str, Any]:
+    """Get a comprehensive summary of all logging systems"""
+    summary = {
+        'timestamp': time.strftime('%Y-%m-%d %H:%M:%S'),
+        'systems': {},
+        'totals': {}
+    }
+    
+    if verbose:
+        print("📊 COMPREHENSIVE LOGGING SUMMARY")
+        print("=" * 45)
+    
+    # Modules summary
+    try:
+        modules_logger = get_modules_logger()
+        if modules_logger:
+            existing_log = modules_logger.read_existing_log()
+            if existing_log:
+                summary['systems']['modules'] = existing_log['metadata']
+                if verbose:
+                    print(f"📚 Modules: {existing_log['metadata']['total_modules']} files, {existing_log['metadata']['total_lines']} lines")
+    except:
+        pass
+    
+    # Terminal summary
+    try:
+        terminal_history = get_terminal_history()
+        if terminal_history:
+            terminal_summary = terminal_history.get_session_summary()
+            if terminal_summary:
+                summary['systems']['terminal'] = terminal_summary
+                if verbose:
+                    print(f"💻 Terminal: {terminal_summary.get('total_commands', 0)} commands")
+    except:
+        pass
+    
+    # Chat summary
+    try:
+        chat_tracker = get_chat_tracker()
+        if chat_tracker and chat_tracker.db:
+            chat_summary = chat_tracker.db.get_session_summary()
+            if chat_summary:
+                summary['systems']['chat'] = chat_summary
+                if verbose:
+                    print(f"💬 Chat: {chat_summary.get('total_entries', 0)} entries")
+    except:
+        pass
+    
+    # Calculate totals
+    summary['totals']['active_systems'] = len(summary['systems'])
+    summary['totals']['fully_initialized'] = is_fully_initialized()
+    
+    if verbose:
+        print("=" * 45)
+        print(f"🎯 Active systems: {summary['totals']['active_systems']}/5")
+        print(f"✅ Fully initialized: {summary['totals']['fully_initialized']}")
+    
+    return summary
 
 # Auto-initialize when module is imported
 try:

@@ -1,0 +1,47 @@
+name: SEO and AI Crawlability Enhancement
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Update sitemap weekly
+    - cron: '0 0 * * 0'
+
+jobs:
+  seo-enhancement:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Generate sitemap.xml
+      run: |
+        echo '<?xml version="1.0" encoding="UTF-8"?>' > sitemap.xml
+        echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' >> sitemap.xml
+        echo '  <url>' >> sitemap.xml
+        echo '    <loc>https://github.com/jedixcom/seo-crawler-tor-ga</loc>' >> sitemap.xml
+        echo '    <lastmod>'$(date +%Y-%m-%d)'</lastmod>' >> sitemap.xml
+        echo '    <changefreq>weekly</changefreq>' >> sitemap.xml
+        echo '    <priority>1.0</priority>' >> sitemap.xml
+        echo '  </url>' >> sitemap.xml
+        echo '</urlset>' >> sitemap.xml
+    
+    - name: Generate robots.txt
+      run: |
+        echo 'User-agent: *' > robots.txt
+        echo 'Allow: /' >> robots.txt
+        echo 'Sitemap: https://github.com/jedixcom/seo-crawler-tor-ga/sitemap.xml' >> robots.txt
+    
+    - name: Update README with SEO metadata
+      run: |
+        echo "Repository updated on: $(date)" >> README_UPDATE_LOG.md
+    
+    - name: Commit SEO files
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add sitemap.xml robots.txt README_UPDATE_LOG.md || true
+        git commit -m "🔍 Update SEO and crawlability files" || true
+        git push || true

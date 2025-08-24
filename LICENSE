@@ -1,0 +1,68 @@
+MIT License
+
+Copyright (c) 2025 JEDIX.COM
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## Additional Terms for SEO and Web Scraping Tools
+
+### Ethical Usage Requirements
+
+This software is provided for legitimate purposes only. Users must comply with:
+
+1. **Website Terms of Service**: Respect all terms of service of websites being crawled
+2. **Robots.txt Compliance**: Honor robots.txt directives and crawl delays
+3. **Rate Limiting**: Implement appropriate delays to avoid overloading servers
+4. **Legal Compliance**: Follow all applicable local and international laws
+5. **Data Privacy**: Respect privacy rights and data protection regulations
+6. **Copyright Respect**: Do not infringe on copyrighted content or intellectual property
+
+### Prohibited Uses
+
+This software SHALL NOT be used for:
+
+- Unauthorized access to protected systems or data
+- Violation of website terms of service or robots.txt
+- Copyright infringement or intellectual property theft
+- Spam generation or malicious content distribution
+- Privacy violations or unauthorized data collection
+- Any illegal activities or harmful purposes
+
+### Disclaimer
+
+The authors and maintainers of this software:
+
+- Are not responsible for any misuse of this software
+- Do not endorse or encourage any unethical or illegal activities
+- Provide this software for educational and legitimate business purposes only
+- Recommend users obtain proper authorization before crawling websites
+- Encourage responsible and ethical usage of web scraping technologies
+
+### Support and Community
+
+For questions about ethical usage or legal compliance:
+
+- Review our documentation and guidelines
+- Consult with legal professionals when in doubt
+- Engage with the community through proper channels
+- Report any concerns or issues through GitHub Issues
+
+By using this software, you agree to these terms and commit to ethical, legal, and responsible usage.

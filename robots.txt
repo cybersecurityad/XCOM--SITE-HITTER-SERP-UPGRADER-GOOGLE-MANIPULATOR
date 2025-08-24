@@ -1,0 +1,87 @@
+User-agent: *
+Allow: /
+
+# Allow AI and search engine crawlers
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+
+User-agent: YandexBot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: WhatsApp
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: ia_archiver
+Allow: /
+
+# AI/ML crawlers
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: YouBot
+Allow: /
+
+User-agent: Anthropic-AI
+Allow: /
+
+User-agent: OpenAI-SearchBot
+Allow: /
+
+# GitHub Pages crawlers
+User-agent: GitHubCrawler
+Allow: /
+
+User-agent: GitLabCrawler
+Allow: /
+
+# Research and academic crawlers
+User-agent: AhrefsBot
+Allow: /
+
+User-agent: SemrushBot
+Allow: /
+
+User-agent: MozBot
+Allow: /
+
+User-agent: ScreamingFrogSEOSpider
+Allow: /
+
+# Sitemap location
+Sitemap: https://raw.githubusercontent.com/jedixcom/seo-crawler-tor-ga/main/sitemap.xml
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1
+
+# Host preference
+Host: github.com/jedixcom/seo-crawler-tor-ga

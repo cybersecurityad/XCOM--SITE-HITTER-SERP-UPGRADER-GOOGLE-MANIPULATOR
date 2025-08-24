@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" 
+        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
+        
+    <!-- Main Repository Page -->
+    <url>
+        <loc>https://github.com/jedixcom/seo-crawler-tor-ga</loc>
+        <lastmod>2025-08-24</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>1.0</priority>
+    </url>
+    
+    <!-- README and Documentation -->
+    <url>
+        <loc>https://github.com/jedixcom/seo-crawler-tor-ga/blob/main/README.md</loc>
+        <lastmod>2025-08-24</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.9</priority>
+    </url>
+    
+    <url>
+        <loc>https://github.com/jedixcom/seo-crawler-tor-ga/blob/main/README_SEO.md</loc>
+        <lastmod>2025-08-24</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.9</priority>
+    </url>
+    
+    <!-- Comprehensive Logging System -->
+    <url>
+        <loc>https://github.com/jedixcom/seo-crawler-tor-ga/blob/main/COMPREHENSIVE_LOGGING_SYSTEM_REPORT.md</loc>
+        <lastmod>2025-08-24</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    
+    <!-- Core System Files -->
+    <url>
+        <loc>https://github.com/jedixcom/seo-crawler-tor-ga/blob/main/auto_logger_init_v2.py</loc>
+        <lastmod>2025-08-24</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    
+    <url>
+        <loc>https://github.com/jedixcom/seo-crawler-tor-ga/blob/main/terminal_history_db.py</loc>
+        <lastmod>2025-08-24</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    
+    <url>
+        <loc>https://github.com/jedixcom/seo-crawler-tor-ga/blob/main/chat_agent_history_db.py</loc>
+        <lastmod>2025-08-24</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    
+    <url>
+        <loc>https://github.com/jedixcom/seo-crawler-tor-ga/blob/main/terminal_command_wrapper.py</loc>
+        <lastmod>2025-08-24</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    
+    <!-- Browser Automation Files -->
+    <url>
+        <loc>https://github.com/jedixcom/seo-crawler-tor-ga/blob/main/human_browser.py</loc>
+        <lastmod>2025-08-24</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    
+    <url>
+        <loc>https://github.com/jedixcom/seo-crawler-tor-ga/blob/main/stable_ga_browser.py</loc>
+        <lastmod>2025-08-24</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    
+    <url>
+        <loc>https://github.com/jedixcom/seo-crawler-tor-ga/blob/main/robust_tor_browser.py</loc>
+        <lastmod>2025-08-24</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    
+    <!-- SEO Tools -->
+    <url>
+        <loc>https://github.com/jedixcom/seo-crawler-tor-ga/blob/main/google_serp_stealth.py</loc>
+        <lastmod>2025-08-24</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    
+    <url>
+        <loc>https://github.com/jedixcom/seo-crawler-tor-ga/blob/main/google_serp_manipulator.py</loc>
+        <lastmod>2025-08-24</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    
+    <!-- Proxy Management -->
+    <url>
+        <loc>https://github.com/jedixcom/seo-crawler-tor-ga/blob/main/proxy_manager.py</loc>
+        <lastmod>2025-08-24</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    
+    <url>
+        <loc>https://github.com/jedixcom/seo-crawler-tor-ga/blob/main/netherlands_proxy_finder.py</loc>
+        <lastmod>2025-08-24</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    
+    <url>
+        <loc>https://github.com/jedixcom/seo-crawler-tor-ga/blob/main/worldwide_proxy_hunter.py</loc>
+        <lastmod>2025-08-24</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    
+    <!-- Issues and Discussions -->
+    <url>
+        <loc>https://github.com/jedixcom/seo-crawler-tor-ga/issues</loc>
+        <lastmod>2025-08-24</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.6</priority>
+    </url>
+    
+    <url>
+        <loc>https://github.com/jedixcom/seo-crawler-tor-ga/discussions</loc>
+        <lastmod>2025-08-24</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.6</priority>
+    </url>
+    
+    <!-- Wiki and Help -->
+    <url>
+        <loc>https://github.com/jedixcom/seo-crawler-tor-ga/wiki</loc>
+        <lastmod>2025-08-24</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    
+    <!-- Releases -->
+    <url>
+        <loc>https://github.com/jedixcom/seo-crawler-tor-ga/releases</loc>
+        <lastmod>2025-08-24</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    
+    <!-- Configuration Files -->
+    <url>
+        <loc>https://github.com/jedixcom/seo-crawler-tor-ga/blob/main/requirements.txt</loc>
+        <lastmod>2025-08-24</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.4</priority>
+    </url>
+    
+    <!-- Example and Test Files -->
+    <url>
+        <loc>https://github.com/jedixcom/seo-crawler-tor-ga/blob/main/comprehensive_logging_test.py</loc>
+        <lastmod>2025-08-24</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.4</priority>
+    </url>
+    
+    <url>
+        <loc>https://github.com/jedixcom/seo-crawler-tor-ga/blob/main/demo_human_crawler.py</loc>
+        <lastmod>2025-08-24</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.4</priority>
+    </url>
+    
+</urlset>
