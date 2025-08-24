@@ -6,6 +6,10 @@ Stable browser with Google Analytics that won't crash VS Code.
 Uses the proven stable browser foundation with GA tracking.
 """
 
+# AUTO-INITIALIZE LOGGING ON IMPORT
+from auto_logger_init import auto_initialize
+auto_initialize()
+
 import time
 import os
 import sys

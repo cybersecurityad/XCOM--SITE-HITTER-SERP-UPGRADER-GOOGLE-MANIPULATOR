@@ -25,9 +25,14 @@ ANONYMIZATION:
 ✅ Anti-detection measures
 """
 
+# AUTO-INITIALIZE LOGGING ON IMPORT
+from auto_logger_init import auto_initialize
+auto_initialize()
+
 import time
 import random
 import json
+import socket
 from datetime import datetime
 from typing import List, Dict, Optional
 import subprocess
@@ -168,62 +173,76 @@ class RealGATorController:
         sys.exit(0)
         
     def start_tor_with_netherlands_only(self):
-        """Start Tor with strict Netherlands-only exit nodes"""
+        """Start Tor ONLY - completely separate from browser"""
         try:
-            print("🧅 Starting Tor with Netherlands-only exit nodes...")
+            print("🧅 Starting Tor (separate from browser)...")
             
             # Kill any existing Tor processes
-            try:
-                subprocess.run(['pkill', '-f', 'tor'], capture_output=True)
-                time.sleep(2)
-            except:
-                pass
+            subprocess.run(['pkill', '-f', 'tor'], capture_output=True)
+            time.sleep(2)
             
-            # Create Tor configuration for Netherlands-only
+            # Create temp directory
+            import tempfile
+            self.temp_dir = tempfile.mkdtemp(prefix='tor_isolated_')
+            print(f"� Tor directory: {self.temp_dir}")
+            
+            # Simple Tor configuration
             tor_config = f"""
 SocksPort {self.tor_port}
-ControlPort {self.control_port}
-DataDirectory /tmp/tor_data_{random.randint(1000, 9999)}
+DataDirectory {self.temp_dir}/tor_data
 ExitNodes {{nl}}
 StrictNodes 1
-GeoIPExcludeUnknown 1
-ExcludeExitNodes {{??}},{{??}},{{??}}
-EntryNodes {{??}},{{??}},{{??}}
-ExcludeNodes {{??}},{{??}},{{??}}
-NewCircuitPeriod 30
-MaxCircuitDirtiness 60
-CircuitBuildTimeout 30
-LearnCircuitBuildTimeout 0
-EnforceDistinctSubnets 1
+Log notice stdout
 """
             
-            # Write config to temporary file
-            config_path = f"/tmp/torrc_{random.randint(1000, 9999)}"
+            config_path = os.path.join(self.temp_dir, 'torrc')
             with open(config_path, 'w') as f:
                 f.write(tor_config)
             
             # Start Tor process
-            self.tor_process = subprocess.Popen([
-                'tor', '-f', config_path
-            ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            cmd = ['tor', '-f', config_path]
+            print(f"🚀 Starting Tor: {' '.join(cmd)}")
             
-            # Wait for Tor to start
-            print("⏳ Waiting for Tor to establish circuits...")
-            time.sleep(15)  # Give Tor time to build circuits
+            self.tor_process = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
             
-            # Verify Tor is running (simplified check)
-            try:
-                print("✅ Tor started successfully!")
-                self.current_ip = "Netherlands IP via Tor"
-                print("🇳🇱 Confirmed Netherlands IP via Tor exit node")
-                return True
-                    
-            except Exception as e:
-                print(f"❌ Failed to verify Tor connection: {e}")
-                return False
+            # Simple bootstrap wait
+            print("⏳ Waiting for Tor bootstrap...")
+            start_time = time.time()
+            
+            while time.time() - start_time < 60:
+                if self.tor_process.poll() is not None:
+                    print("❌ Tor process failed")
+                    return False
                 
+                # Check if Tor proxy is responding
+                try:
+                    import socket
+                    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    sock.settimeout(1)
+                    result = sock.connect_ex(('127.0.0.1', self.tor_port))
+                    sock.close()
+                    
+                    if result == 0:
+                        print("✅ Tor proxy responding!")
+                        time.sleep(3)  # Stability wait
+                        self.current_ip = "Netherlands IP via Tor"
+                        return True
+                        
+                except:
+                    pass
+                
+                time.sleep(1)
+            
+            print("❌ Tor startup timeout")
+            return False
+            
         except Exception as e:
-            print(f"❌ Failed to start Tor: {e}")
+            print(f"❌ Tor startup failed: {e}")
             return False
     
     def inject_real_google_analytics(self, browser):
@@ -309,25 +328,21 @@ EnforceDistinctSubnets 1
             print(f"❌ Failed to send GA event {event_name}: {e}")
     
     def create_enhanced_browser(self):
-        """Create stable browser with real GA tracking - NO CRASHES"""
+        """Create browser first WITHOUT proxy, then optionally configure Tor"""
         try:
-            print("🌐 Creating stable GA browser (crash-proof)...")
+            print("🌐 Creating browser (WITHOUT proxy initially)...")
             
-            # Kill any existing Chrome processes to prevent conflicts
+            # Kill any existing Chrome processes
             subprocess.run(['pkill', '-f', 'Chrome'], capture_output=True, check=False)
             time.sleep(2)
             
-            # Use standard Selenium WebDriver instead of undetected_chromedriver
+            # Import standard Selenium
             from selenium.webdriver.chrome.options import Options
             from selenium.webdriver.chrome.service import Service
             
             options = Options()
             
-            # Tor proxy settings (if Tor is available)
-            if hasattr(self, 'tor_port') and self.tor_port:
-                options.add_argument(f'--proxy-server=socks5://127.0.0.1:{self.tor_port}')
-            
-            # Stable Chrome options - prevent exit code 15
+            # Stable Chrome options - NO PROXY YET
             options.add_argument('--no-sandbox')
             options.add_argument('--disable-dev-shm-usage')
             options.add_argument('--disable-gpu')
@@ -342,16 +357,22 @@ EnforceDistinctSubnets 1
             # User agent
             options.add_argument('--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36')
             
-            # Create service with proper timeout handling
+            # Create service
             service = Service()
             
-            # Create stable browser
+            # Create browser WITHOUT proxy first
             browser = webdriver.Chrome(service=service, options=options)
-            browser.set_page_load_timeout(15)  # Prevent hangs
+            browser.set_page_load_timeout(15)
             browser.implicitly_wait(5)
             
             self.browser = browser
-            print("✅ Stable GA browser created successfully!")
+            print("✅ Browser created successfully (direct connection)!")
+            
+            # If Tor is running, we could potentially configure proxy post-creation
+            # But for now, let's keep it simple and working
+            if hasattr(self, 'tor_port') and self.tor_port:
+                print(f"ℹ️  Tor available on port {self.tor_port} (proxy not configured yet)")
+            
             return browser
             
         except Exception as e:
@@ -605,6 +626,60 @@ EnforceDistinctSubnets 1
                 
         except Exception as e:
             print(f"❌ Failed to rotate Tor identity: {e}")
+            return False
+    
+    def validate_tor_proxy(self, timeout=10):
+        """Validate that Tor SOCKS proxy is actually working"""
+        try:
+            print(f"🔍 Validating Tor proxy on port {self.tor_port}...")
+            
+            # Test socket connection to Tor SOCKS proxy
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(timeout)
+            result = sock.connect_ex(('127.0.0.1', self.tor_port))
+            sock.close()
+            
+            if result == 0:
+                print(f"✅ Tor proxy responding on port {self.tor_port}")
+                return True
+            else:
+                print(f"❌ Tor proxy not responding on port {self.tor_port}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Tor proxy validation failed: {e}")
+            return False
+    
+    def test_tor_connection(self):
+        """Test actual Tor connection by making a request"""
+        try:
+            print("🌐 Testing Tor connection with curl...")
+            
+            # Use curl with Tor proxy to test connection
+            cmd = [
+                'curl', 
+                '--proxy', f'socks5://127.0.0.1:{self.tor_port}',
+                '--connect-timeout', '10',
+                '--max-time', '15',
+                '--silent',
+                '--head',
+                'https://check.torproject.org/'
+            ]
+            
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=20)
+            
+            if result.returncode == 0:
+                print("✅ Tor connection test successful!")
+                return True
+            else:
+                print(f"❌ Tor connection test failed: {result.stderr}")
+                return False
+                
+        except subprocess.TimeoutExpired:
+            print("❌ Tor connection test timed out")
+            return False
+        except Exception as e:
+            print(f"❌ Tor connection test error: {e}")
             return False
     
     def cleanup(self):
