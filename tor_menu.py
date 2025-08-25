@@ -25,6 +25,9 @@ Main menu system for advanced SEO manipulation and web automation.
 
 import os
 import time
+import random
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from dutch_rotation_browser import DutchRotationBrowser, DutchRotationConfig
 
 # Global configuration - used by all browser operations
@@ -476,6 +479,161 @@ def httpbin_testing():
     input("\nPress Enter to continue...")
 
 
+def google_search_visit():
+    """Visit a URL through Google search - more realistic browsing pattern"""
+    clear_screen()
+    print("🌐 VISIT URL THROUGH GOOGLE SEARCH")
+    print("=" * 50)
+    print("🇳🇱 Using Dutch rotation browser with current global configuration")
+    print("🔍 Will search on Google.nl and click the result")
+    print()
+    
+    url = input("Enter URL to find via Google search: ").strip()
+    if not url:
+        print("❌ No URL provided!")
+        input("\nPress Enter to continue...")
+        return
+    
+    # Add protocol if not present
+    if not url.startswith(('http://', 'https://')):
+        url = 'https://' + url
+    
+    print(f"🎯 Target URL: {url}")
+    print("🔍 Searching via Google.nl...")
+    
+    browser = DutchRotationBrowser(GLOBAL_CONFIG)
+    
+    try:
+        if browser.setup():
+            print("✅ Dutch rotation browser setup successful!")
+            print(f"📊 Current IP: {browser.current_ip}")
+            print()
+            
+            # Visit Google.nl first
+            print("🌐 Visiting Google.nl...")
+            if browser.visit_with_rotation("https://www.google.nl"):
+                time.sleep(random.uniform(2, 4))
+                
+                try:
+                    # Wait for the page to load and find the search box
+                    time.sleep(random.uniform(2, 4))
+                    
+                    # Try multiple selectors for Google search box
+                    search_box = None
+                    selectors = ["input[name='q']", "textarea[name='q']", "[name='q']", "#APjFqb"]
+                    
+                    for selector in selectors:
+                        try:
+                            search_box = browser.driver.find_element(By.CSS_SELECTOR, selector)
+                            if search_box.is_displayed() and search_box.is_enabled():
+                                break
+                        except:
+                            continue
+                    
+                    if not search_box:
+                        print("❌ Could not find Google search box")
+                        return
+                    
+                    # Click on the search box to focus it
+                    search_box.click()
+                    time.sleep(random.uniform(0.5, 1.0))
+                    
+                    # Clear any existing text and type the URL
+                    search_box.clear()
+                    time.sleep(random.uniform(0.5, 1.0))
+                    
+                    # Type the URL with human-like typing
+                    print(f"⌨️  Typing search query: {url}")
+                    for char in url:
+                        search_box.send_keys(char)
+                        time.sleep(random.uniform(0.05, 0.15))
+                    
+                    time.sleep(random.uniform(1, 2))
+                    
+                    # Press Enter to search
+                    print("🔍 Submitting search...")
+                    search_box.send_keys(Keys.RETURN)
+                    
+                    # Wait for search results
+                    time.sleep(random.uniform(3, 5))
+                    
+                    # Look for search results and try to click the first relevant one
+                    try:
+                        # Try to find search result links
+                        search_results = browser.driver.find_elements(By.CSS_SELECTOR, "h3")
+                        
+                        if search_results:
+                            # Click on the first search result
+                            print("🎯 Clicking on first search result...")
+                            first_result = search_results[0]
+                            
+                            # Scroll the element into view
+                            browser.driver.execute_script("arguments[0].scrollIntoView(true);", first_result)
+                            time.sleep(random.uniform(1, 2))
+                            
+                            # Click the result
+                            first_result.click()
+                            
+                            # Wait for page to load
+                            time.sleep(random.uniform(3, 6))
+                            
+                            print("✅ Successfully navigated through Google search!")
+                            current_url = browser.driver.current_url
+                            print(f"📍 Current URL: {current_url}")
+                            
+                            # Perform human simulation on the target page
+                            if browser.config.enable_human_simulation:
+                                print("🎭 Performing human simulation...")
+                                browser.simulate_mouse_movements()
+                                browser.simulate_scrolling_behavior(current_url)
+                                browser.find_and_click_interesting_links(current_url)
+                            
+                            # Stay on page for configured time
+                            stay_time = browser.config.page_stay_time_minutes
+                            print(f"⏰ Staying on page for {stay_time} minutes...")
+                            
+                            # Break stay time into smaller chunks for more realistic behavior
+                            total_seconds = stay_time * 60
+                            chunk_size = 30  # 30 second chunks
+                            chunks = int(total_seconds / chunk_size)
+                            
+                            for i in range(chunks):
+                                time.sleep(chunk_size)
+                                if i % 4 == 0:  # Every 2 minutes, show progress
+                                    remaining_time = (chunks - i - 1) * chunk_size / 60
+                                    print(f"⏳ Time remaining: {remaining_time:.1f} minutes")
+                                    
+                                    # Random small interactions
+                                    if random.random() < 0.3:  # 30% chance
+                                        if browser.driver:
+                                            browser.driver.execute_script("window.scrollBy(0, Math.random() * 200 - 100);")
+                            
+                            print("✅ Page visit through Google search completed!")
+                            
+                        else:
+                            print("❌ No search results found!")
+                            
+                    except Exception as e:
+                        print(f"❌ Error interacting with search results: {e}")
+                        
+                except Exception as e:
+                    print(f"❌ Error during Google search: {e}")
+                    
+            else:
+                print("❌ Failed to visit Google.nl")
+                
+        else:
+            print("❌ Browser setup failed!")
+            
+    except Exception as e:
+        print(f"❌ Error during Google search visit: {e}")
+        
+    finally:
+        browser.cleanup()
+    
+    input("\nPress Enter to continue...")
+
+
 def main_menu():
     """Display the main menu and handle user selections"""
     while True:
@@ -485,13 +643,14 @@ def main_menu():
         print("1. 🎯 Custom URL (Full Simulation)")
         print("2. 🔍 Batch URL Testing")
         print("3. 🧪 HTTPBin Testing")
-        print("4. ⚙️  Browser Configuration")
-        print("5. 📋 Show Current Configuration")
-        print("6. 🚪 Exit")
+        print("4. 🌐 Visit URL through Google Search")
+        print("5. ⚙️  Browser Configuration")
+        print("6. 📋 Show Current Configuration")
+        print("7. 🚪 Exit")
         print()
         
         try:
-            choice = input("Select option (1-6): ").strip()
+            choice = input("Select option (1-7): ").strip()
             
             if choice == '1':
                 custom_url_test()
@@ -500,15 +659,17 @@ def main_menu():
             elif choice == '3':
                 httpbin_testing()
             elif choice == '4':
-                browser_config()
+                google_search_visit()
             elif choice == '5':
-                show_current_config()
+                browser_config()
             elif choice == '6':
+                show_current_config()
+            elif choice == '7':
                 clear_screen()
                 print("👋 Goodbye!")
                 break
             else:
-                print("❌ Invalid choice! Please select 1-6.")
+                print("❌ Invalid choice! Please select 1-7.")
                 time.sleep(1)
                 
         except KeyboardInterrupt:
