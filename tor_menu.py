@@ -32,23 +32,19 @@ from dutch_rotation_browser import DutchRotationBrowser, DutchRotationConfig
 
 # Global configuration - used by all browser operations
 GLOBAL_CONFIG = DutchRotationConfig(
-    rotation_interval=3,
-    user_agent_rotation=True,
-    verify_dutch_ip=True,
-    save_screenshots=True,
-    min_delay=2.0,
-    max_delay=6.0,
     headless=False,
-    max_retries=3,
-    tor_port=9050,
-    control_port=9051,
-    # Human simulation settings
+    min_delay=2.0,
+    max_delay=5.0,
+    rotation_interval=3,
+    save_screenshots=True,
+    verify_dutch_ip=False,
+    user_agent_rotation=True,
     enable_human_simulation=True,
     simulate_mouse_movements=True,
-    simulate_reading_behavior=True,
     simulate_scrolling=True,
     simulate_clicking=True,
-    behavior_profile="balanced"
+    page_stay_time_minutes=5.0,
+    simulation_repeat_count=1
 )
 
 
@@ -485,7 +481,8 @@ def google_search_visit():
     print("🌐 VISIT URL THROUGH DUCKDUCKGO SEARCH")
     print("=" * 50)
     print("🇳🇱 Using Dutch rotation browser with current global configuration")
-    print("🔍 Will search for keywords and click matching URL result")
+    print("🔍 Will search for keywords and click ONLY exact matching URL results")
+    print("🎯 Only clicks if exact URL or URL/* extensions found")
     print("🦆 DuckDuckGo is Tor-friendly and privacy-focused!")
     print()
     
@@ -519,8 +516,7 @@ def google_search_visit():
     
     try:
         if browser.setup():
-            print("✅ Dutch rotation browser setup successful!")
-            print(f"📊 Current IP: {browser.current_ip}")
+            print("✅ Browser setup successful!")
             print()
             
             # Visit DuckDuckGo first
@@ -579,31 +575,38 @@ def google_search_visit():
                         if search_results:
                             print(f"🔍 Found {len(search_results)} search results")
                             
-                            # Look for a result that matches our target domain
+                            # Look for a result that matches our exact target URL
                             clicked_result = False
                             for i, result in enumerate(search_results):
                                 try:
                                     result_url = result.get_attribute('href')
-                                    if result_url and target_domain in result_url:
-                                        print(f"🎯 Found matching result #{i+1}: {result_url}")
+                                    if result_url:
+                                        # Clean up URLs for comparison
+                                        clean_result = result_url.replace('https://', '').replace('http://', '').rstrip('/')
+                                        clean_target = target_url.replace('https://', '').replace('http://', '').rstrip('/')
                                         
-                                        # Scroll the element into view
-                                        browser.driver.execute_script("arguments[0].scrollIntoView(true);", result)
-                                        time.sleep(random.uniform(1, 2))
+                                        # Check if it's an exact match or URL with extension
+                                        is_exact_match = clean_result == clean_target
+                                        is_extension_match = clean_result.startswith(clean_target + '/')
                                         
-                                        # Click the result
-                                        result.click()
-                                        clicked_result = True
-                                        break
+                                        if is_exact_match or is_extension_match:
+                                            print(f"🎯 Found exact matching result #{i+1}: {result_url}")
+                                            print(f"   Target: {target_url}")
+                                            print(f"   Match type: {'Exact' if is_exact_match else 'Extension'}")
+                                            
+                                            # Click the result directly without scrolling
+                                            result.click()
+                                            clicked_result = True
+                                            break
+                                        else:
+                                            print(f"   ❌ Result #{i+1}: {result_url} (doesn't match {target_url})")
                                 except Exception as e:
                                     continue
                             
                             if not clicked_result:
-                                print(f"⚠️  No result found matching domain '{target_domain}', clicking first result...")
-                                first_result = search_results[0]
-                                browser.driver.execute_script("arguments[0].scrollIntoView(true);", first_result)
-                                time.sleep(random.uniform(1, 2))
-                                first_result.click()
+                                print(f"❌ No result found matching exact URL '{target_url}' or its extensions!")
+                                print("🚫 Skipping click - only exact matches allowed")
+                                return
                             
                             # Wait for page to load
                             time.sleep(random.uniform(3, 6))
@@ -672,30 +675,24 @@ def main_menu():
         
         print("Main Menu:")
         print("1. 🎯 Custom URL (Full Simulation)")
-        print("2. 🔍 Batch URL Testing")
-        print("3. 🧪 HTTPBin Testing")
-        print("4. 🦆 Search Keywords & Visit URL through DuckDuckGo")
-        print("5. ⚙️  Browser Configuration")
-        print("6. 📋 Show Current Configuration")
-        print("7. 🚪 Exit")
+        print("2. 🦆 Search Keywords & Visit URL through DuckDuckGo")
+        print("3. ⚙️  Browser Configuration")
+        print("4. 📋 Show Current Configuration")
+        print("5. 🚪 Exit")
         print()
         
         try:
-            choice = input("Select option (1-7): ").strip()
+            choice = input("Select option (1-5): ").strip()
             
             if choice == '1':
                 custom_url_test()
             elif choice == '2':
-                batch_testing()
-            elif choice == '3':
-                httpbin_testing()
-            elif choice == '4':
                 google_search_visit()
-            elif choice == '5':
+            elif choice == '3':
                 browser_config()
-            elif choice == '6':
+            elif choice == '4':
                 show_current_config()
-            elif choice == '7':
+            elif choice == '5':
                 clear_screen()
                 print("👋 Goodbye!")
                 break
