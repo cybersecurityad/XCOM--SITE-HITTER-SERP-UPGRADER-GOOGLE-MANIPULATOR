@@ -76,8 +76,8 @@ Professional-grade web automation tool featuring **Dutch-only Tor exit nodes**, 
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/jedixcom/xcom-advanced-web-site-hitter.git
-cd xcom-advanced-web-site-hitter
+git clone https://github.com/jedixcom/XCOM-ADVANCED-WEB-SITE-HITTER-SERP-UPGRADER.git
+cd XCOM-ADVANCED-WEB-SITE-HITTER-SERP-UPGRADER
 ```
 
 2. **Install Tor via Homebrew**

@@ -4,8 +4,8 @@
 
 ```bash
 # Clone and setup
-git clone https://github.com/jedixcom/xcom-advanced-web-site-hitter.git
-cd xcom-advanced-web-site-hitter
+git clone https://github.com/jedixcom/XCOM-ADVANCED-WEB-SITE-HITTER-SERP-UPGRADER.git
+cd XCOM-ADVANCED-WEB-SITE-HITTER-SERP-UPGRADER
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
