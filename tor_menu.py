@@ -480,15 +480,16 @@ def httpbin_testing():
 
 
 def google_search_visit():
-    """Visit a URL through Google search - more realistic browsing pattern"""
+    """Visit a URL through DuckDuckGo search - more realistic browsing pattern"""
     clear_screen()
-    print("🌐 VISIT URL THROUGH GOOGLE SEARCH")
+    print("🌐 VISIT URL THROUGH DUCKDUCKGO SEARCH")
     print("=" * 50)
     print("🇳🇱 Using Dutch rotation browser with current global configuration")
-    print("🔍 Will search on Google.nl and click the result")
+    print("🔍 Will search on DuckDuckGo and click the result")
+    print("🦆 DuckDuckGo is Tor-friendly and privacy-focused!")
     print()
     
-    url = input("Enter URL to find via Google search: ").strip()
+    url = input("Enter URL to find via DuckDuckGo search: ").strip()
     if not url:
         print("❌ No URL provided!")
         input("\nPress Enter to continue...")
@@ -498,8 +499,12 @@ def google_search_visit():
     if not url.startswith(('http://', 'https://')):
         url = 'https://' + url
     
+    # Extract domain for search query
+    domain = url.replace('https://', '').replace('http://', '').split('/')[0]
+    
     print(f"🎯 Target URL: {url}")
-    print("🔍 Searching via Google.nl...")
+    print(f"🔍 Searching for: {domain}")
+    print("🦆 Using DuckDuckGo search...")
     
     browser = DutchRotationBrowser(GLOBAL_CONFIG)
     
@@ -509,18 +514,18 @@ def google_search_visit():
             print(f"📊 Current IP: {browser.current_ip}")
             print()
             
-            # Visit Google.nl first
-            print("🌐 Visiting Google.nl...")
-            if browser.visit_with_rotation("https://www.google.nl"):
+            # Visit DuckDuckGo first
+            print("🦆 Visiting DuckDuckGo...")
+            if browser.visit_with_rotation("https://duckduckgo.com"):
                 time.sleep(random.uniform(2, 4))
                 
                 try:
                     # Wait for the page to load and find the search box
                     time.sleep(random.uniform(2, 4))
                     
-                    # Try multiple selectors for Google search box
+                    # Try multiple selectors for DuckDuckGo search box
                     search_box = None
-                    selectors = ["input[name='q']", "textarea[name='q']", "[name='q']", "#APjFqb"]
+                    selectors = ["input[name='q']", "input#search_form_input_homepage", "input#searchbox_input", "[name='q']"]
                     
                     for selector in selectors:
                         try:
@@ -531,20 +536,21 @@ def google_search_visit():
                             continue
                     
                     if not search_box:
-                        print("❌ Could not find Google search box")
+                        print("❌ Could not find DuckDuckGo search box")
                         return
                     
                     # Click on the search box to focus it
                     search_box.click()
                     time.sleep(random.uniform(0.5, 1.0))
                     
-                    # Clear any existing text and type the URL
+                    # Clear any existing text and type the search query
                     search_box.clear()
                     time.sleep(random.uniform(0.5, 1.0))
                     
-                    # Type the URL with human-like typing
-                    print(f"⌨️  Typing search query: {url}")
-                    for char in url:
+                    # Type the domain with human-like typing
+                    search_query = f"site:{domain}"
+                    print(f"⌨️  Typing search query: {search_query}")
+                    for char in search_query:
                         search_box.send_keys(char)
                         time.sleep(random.uniform(0.05, 0.15))
                     
@@ -559,8 +565,8 @@ def google_search_visit():
                     
                     # Look for search results and try to click the first relevant one
                     try:
-                        # Try to find search result links
-                        search_results = browser.driver.find_elements(By.CSS_SELECTOR, "h3")
+                        # Try to find DuckDuckGo search result links
+                        search_results = browser.driver.find_elements(By.CSS_SELECTOR, "h2 a, .result__title a, [data-testid='result-title-a']")
                         
                         if search_results:
                             # Click on the first search result
@@ -577,7 +583,7 @@ def google_search_visit():
                             # Wait for page to load
                             time.sleep(random.uniform(3, 6))
                             
-                            print("✅ Successfully navigated through Google search!")
+                            print("✅ Successfully navigated through DuckDuckGo search!")
                             current_url = browser.driver.current_url
                             print(f"📍 Current URL: {current_url}")
                             
@@ -608,7 +614,7 @@ def google_search_visit():
                                         if browser.driver:
                                             browser.driver.execute_script("window.scrollBy(0, Math.random() * 200 - 100);")
                             
-                            print("✅ Page visit through Google search completed!")
+                            print("✅ Page visit through DuckDuckGo search completed!")
                             
                         else:
                             print("❌ No search results found!")
@@ -617,16 +623,16 @@ def google_search_visit():
                         print(f"❌ Error interacting with search results: {e}")
                         
                 except Exception as e:
-                    print(f"❌ Error during Google search: {e}")
+                    print(f"❌ Error during DuckDuckGo search: {e}")
                     
             else:
-                print("❌ Failed to visit Google.nl")
+                print("❌ Failed to visit DuckDuckGo")
                 
         else:
             print("❌ Browser setup failed!")
             
     except Exception as e:
-        print(f"❌ Error during Google search visit: {e}")
+        print(f"❌ Error during DuckDuckGo search visit: {e}")
         
     finally:
         browser.cleanup()
@@ -643,7 +649,7 @@ def main_menu():
         print("1. 🎯 Custom URL (Full Simulation)")
         print("2. 🔍 Batch URL Testing")
         print("3. 🧪 HTTPBin Testing")
-        print("4. 🌐 Visit URL through Google Search")
+        print("4. 🦆 Visit URL through DuckDuckGo Search")
         print("5. ⚙️  Browser Configuration")
         print("6. 📋 Show Current Configuration")
         print("7. 🚪 Exit")
