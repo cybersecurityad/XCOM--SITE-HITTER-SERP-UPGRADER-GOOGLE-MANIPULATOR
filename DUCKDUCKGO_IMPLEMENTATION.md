@@ -8,15 +8,17 @@
 
 ## 🎯 NEW FUNCTIONALITY
 
-### 🦆 **Menu Option 4**: "Visit URL through DuckDuckGo Search"
+### 🦆 **Menu Option 4**: "Search Keywords & Visit URL through DuckDuckGo"
 
 **How it works now:**
-1. **🦆 Visits DuckDuckGo.com** - Tor-friendly, no bot detection
-2. **🔍 Searches using `site:domain.com`** syntax for precise results
-3. **⌨️ Human-like typing** with realistic delays between characters
-4. **🎯 Clicks first search result** from DuckDuckGo results
-5. **🎭 Full human simulation** on target website
-6. **⏰ Extended page stay** (10-60 minutes as configured)
+1. **🔍 Input 1: Search Keywords** - Enter the terms you want to search for (e.g., "python programming", "web development")
+2. **🎯 Input 2: Target URL** - Enter the specific website you want to click on (e.g., "example.com", "github.com")
+3. **🦆 Visits DuckDuckGo.com** - Tor-friendly, no bot detection
+4. **⌨️ Searches for keywords** with human-like typing delays
+5. **🎯 Finds matching URL** - Looks for search results containing your target domain
+6. **🖱️ Clicks the matching result** - Or falls back to first result if no exact match
+7. **🎭 Full human simulation** on target website
+8. **⏰ Extended page stay** (10-60 minutes as configured)
 
 ## 🚀 ADVANTAGES OF DUCKDUCKGO
 
@@ -75,10 +77,16 @@ search_results = browser.driver.find_elements(By.CSS_SELECTOR,
 
 ```bash
 python tor_menu.py
-# Select option 4: 🦆 Visit URL through DuckDuckGo Search
-# Enter: example.com
-# Watch the magic happen! 🪄
+# Select option 4: 🦆 Search Keywords & Visit URL through DuckDuckGo
+# Input 1 - Search terms: "python programming"
+# Input 2 - Target URL: "github.com"
+# Watch the realistic search behavior! 🪄
 ```
+
+**Example Usage:**
+- **Search terms**: "web development tutorials"
+- **Target URL**: "w3schools.com"
+- **Result**: Searches for "web development tutorials", finds w3schools.com in results, clicks it
 
 **Perfect for professional SEO enhancement with zero detection issues!** 🌟
 

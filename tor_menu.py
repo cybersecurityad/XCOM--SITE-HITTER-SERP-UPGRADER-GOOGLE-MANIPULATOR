@@ -485,25 +485,34 @@ def google_search_visit():
     print("🌐 VISIT URL THROUGH DUCKDUCKGO SEARCH")
     print("=" * 50)
     print("🇳🇱 Using Dutch rotation browser with current global configuration")
-    print("🔍 Will search on DuckDuckGo and click the result")
+    print("🔍 Will search for keywords and click matching URL result")
     print("🦆 DuckDuckGo is Tor-friendly and privacy-focused!")
     print()
     
-    url = input("Enter URL to find via DuckDuckGo search: ").strip()
-    if not url:
-        print("❌ No URL provided!")
+    # Get search keywords first
+    search_terms = input("Enter search keywords/terms: ").strip()
+    if not search_terms:
+        print("❌ No search terms provided!")
+        input("\nPress Enter to continue...")
+        return
+    
+    # Get target URL to click on
+    target_url = input("Enter target URL to click on: ").strip()
+    if not target_url:
+        print("❌ No target URL provided!")
         input("\nPress Enter to continue...")
         return
     
     # Add protocol if not present
-    if not url.startswith(('http://', 'https://')):
-        url = 'https://' + url
+    if not target_url.startswith(('http://', 'https://')):
+        target_url = 'https://' + target_url
     
-    # Extract domain for search query
-    domain = url.replace('https://', '').replace('http://', '').split('/')[0]
+    # Extract domain from target URL for matching
+    target_domain = target_url.replace('https://', '').replace('http://', '').split('/')[0]
     
-    print(f"🎯 Target URL: {url}")
-    print(f"🔍 Searching for: {domain}")
+    print(f"🔍 Search terms: {search_terms}")
+    print(f"🎯 Target URL: {target_url}")
+    print(f"🌐 Looking for domain: {target_domain}")
     print("🦆 Using DuckDuckGo search...")
     
     browser = DutchRotationBrowser(GLOBAL_CONFIG)
@@ -547,10 +556,9 @@ def google_search_visit():
                     search_box.clear()
                     time.sleep(random.uniform(0.5, 1.0))
                     
-                    # Type the domain with human-like typing
-                    search_query = f"site:{domain}"
-                    print(f"⌨️  Typing search query: {search_query}")
-                    for char in search_query:
+                    # Type the search terms with human-like typing
+                    print(f"⌨️  Typing search terms: {search_terms}")
+                    for char in search_terms:
                         search_box.send_keys(char)
                         time.sleep(random.uniform(0.05, 0.15))
                     
@@ -563,22 +571,39 @@ def google_search_visit():
                     # Wait for search results
                     time.sleep(random.uniform(3, 5))
                     
-                    # Look for search results and try to click the first relevant one
+                    # Look for search results and try to click the matching one
                     try:
                         # Try to find DuckDuckGo search result links
                         search_results = browser.driver.find_elements(By.CSS_SELECTOR, "h2 a, .result__title a, [data-testid='result-title-a']")
                         
                         if search_results:
-                            # Click on the first search result
-                            print("🎯 Clicking on first search result...")
-                            first_result = search_results[0]
+                            print(f"🔍 Found {len(search_results)} search results")
                             
-                            # Scroll the element into view
-                            browser.driver.execute_script("arguments[0].scrollIntoView(true);", first_result)
-                            time.sleep(random.uniform(1, 2))
+                            # Look for a result that matches our target domain
+                            clicked_result = False
+                            for i, result in enumerate(search_results):
+                                try:
+                                    result_url = result.get_attribute('href')
+                                    if result_url and target_domain in result_url:
+                                        print(f"🎯 Found matching result #{i+1}: {result_url}")
+                                        
+                                        # Scroll the element into view
+                                        browser.driver.execute_script("arguments[0].scrollIntoView(true);", result)
+                                        time.sleep(random.uniform(1, 2))
+                                        
+                                        # Click the result
+                                        result.click()
+                                        clicked_result = True
+                                        break
+                                except Exception as e:
+                                    continue
                             
-                            # Click the result
-                            first_result.click()
+                            if not clicked_result:
+                                print(f"⚠️  No result found matching domain '{target_domain}', clicking first result...")
+                                first_result = search_results[0]
+                                browser.driver.execute_script("arguments[0].scrollIntoView(true);", first_result)
+                                time.sleep(random.uniform(1, 2))
+                                first_result.click()
                             
                             # Wait for page to load
                             time.sleep(random.uniform(3, 6))
@@ -649,7 +674,7 @@ def main_menu():
         print("1. 🎯 Custom URL (Full Simulation)")
         print("2. 🔍 Batch URL Testing")
         print("3. 🧪 HTTPBin Testing")
-        print("4. 🦆 Visit URL through DuckDuckGo Search")
+        print("4. 🦆 Search Keywords & Visit URL through DuckDuckGo")
         print("5. ⚙️  Browser Configuration")
         print("6. 📋 Show Current Configuration")
         print("7. 🚪 Exit")
