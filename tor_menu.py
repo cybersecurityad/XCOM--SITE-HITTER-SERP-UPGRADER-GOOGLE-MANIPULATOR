@@ -11,6 +11,8 @@ import os
 import sys
 from typing import Optional
 from simple_advanced_tor_browser import SimpleAdvancedTorBrowser, SimpleTorConfig
+from dutch_rotation_browser import DutchRotationBrowser, DutchRotationConfig
+from visual_tor_browser import VisualTorBrowser
 
 
 def clear_screen():
@@ -93,10 +95,11 @@ def quick_test():
 
 
 def custom_url_test():
-    """Custom URL with full simulation"""
+    """Custom URL with full simulation using Dutch rotation browser"""
     clear_screen()
     print("🎯 CUSTOM URL FULL SIMULATION")
-    print("=" * 35)
+    print("🇳🇱 Using Dutch rotation browser with IP rotation")
+    print("=" * 45)
     
     url = input("Enter URL to test: ").strip()
     if not url:
@@ -107,33 +110,40 @@ def custom_url_test():
     if not url.startswith(('http://', 'https://')):
         url = 'https://' + url
     
-    print(f"\n🚀 Starting full simulation for: {url}")
+    print(f"\n🚀 Starting Dutch rotation simulation for: {url}")
     
-    # Enhanced config for full simulation
-    config = SimpleTorConfig(
+    # Configure Dutch rotation browser for full simulation
+    config = DutchRotationConfig(
+        rotation_interval=2,  # Rotate IP every 2 requests
+        user_agent_rotation=True,
+        verify_dutch_ip=True,
         save_screenshots=True,
-        simulate_mouse_movements=True,
-        extract_data=True,
         min_delay=3.0,
         max_delay=8.0
     )
     
-    browser = SimpleAdvancedTorBrowser(config)
+    browser = DutchRotationBrowser(config)
     
     try:
         if browser.setup():
-            results = browser.comprehensive_page_visit(url)
+            print("✅ Dutch rotation browser setup successful!")
+            print("🔄 Testing with automatic IP and user agent rotation...")
             
-            if results['success']:
-                print(f"\n✅ SUCCESS! Page analyzed:")
-                page_data = results.get('page_data', {})
-                stats = page_data.get('stats', {})
-                print(f"   📄 Title: {page_data.get('title', 'N/A')}")
-                print(f"   🔗 Links: {stats.get('links', 0)}")
-                print(f"   🖼️  Images: {stats.get('images', 0)}")
-                print(f"   📝 Forms: {stats.get('forms', 0)}")
-            else:
-                print(f"❌ Failed: {results.get('error', 'Unknown error')}")
+            # Visit the URL multiple times to trigger rotation
+            for i in range(3):
+                print(f"\n--- Visit {i+1}/3 ---")
+                success = browser.visit_with_rotation(url)
+                if success:
+                    print(f"✅ Visit {i+1} completed successfully")
+                    print(f"� Current IP: {browser.current_ip}")
+                    ua_display = browser.current_user_agent[:50] if browser.current_user_agent else "Unknown"
+                    print(f"🎭 Current UA: {ua_display}...")
+                else:
+                    print(f"❌ Visit {i+1} failed")
+            
+            print(f"\n🎉 Full simulation completed!")
+            print(f"📈 Total requests made: {browser.request_count}")
+            print(f"🔄 IP changes: {len(browser.session_data['ip_changes'])}")
         else:
             print("❌ Browser setup failed!")
     finally:
@@ -212,40 +222,62 @@ def browser_config():
     print("2. 🚶 Normal mode (balanced)")
     print("3. 🐌 Slow mode (maximum stealth)")
     print("4. 🖥️  Headless mode")
-    print("5. 🇳🇱 Dutch exit nodes only")
-    print("6. 🌍 Global exit nodes (default)")
-    print("7. 🖱️  Mouse simulation settings")
-    print("8. 📸 Screenshot settings")
-    print("9. 🔙 Back to main menu")
+    print("5. 🇳🇱 Dutch rotation browser (IP + UA rotation)")
+    print("6. 🇳🇱 Dutch-only exit nodes (simple)")
+    print("7. 🌍 Global exit nodes (default)")
+    print("8. � Visual GA4 browser (human simulation)")
+    print("9. �🖱️  Mouse simulation settings")
+    print("10. 📸 Screenshot settings")
+    print("11. 🔙 Back to main menu")
     
     try:
-        choice = int(input("\nSelect option (1-9): "))
+        choice = int(input("\nSelect option (1-11): "))
+        
+        browser = None
         
         if choice == 1:
             print("🏃 Fast mode selected")
             config = SimpleTorConfig(min_delay=0.5, max_delay=1.5)
+            browser = SimpleAdvancedTorBrowser(config)
         elif choice == 2:
             print("🚶 Normal mode selected")
             config = SimpleTorConfig(min_delay=2.0, max_delay=5.0)
+            browser = SimpleAdvancedTorBrowser(config)
         elif choice == 3:
             print("🐌 Slow mode selected")
             config = SimpleTorConfig(min_delay=5.0, max_delay=12.0)
+            browser = SimpleAdvancedTorBrowser(config)
         elif choice == 4:
             print("🖥️  Headless mode")
             config = SimpleTorConfig(headless=True)
+            browser = SimpleAdvancedTorBrowser(config)
         elif choice == 5:
-            print("🇳🇱 Dutch exit nodes only mode")
+            print("🇳🇱 Dutch rotation browser - Advanced IP & User Agent rotation")
+            config = DutchRotationConfig(
+                rotation_interval=3,
+                user_agent_rotation=True,
+                verify_dutch_ip=True,
+                save_screenshots=True
+            )
+            browser = DutchRotationBrowser(config)
+        elif choice == 6:
+            print("🇳🇱 Dutch-only exit nodes (simple)")
             config = SimpleTorConfig(
                 use_dutch_exit_nodes_only=True,
                 save_screenshots=True
             )
-        elif choice == 6:
+            browser = SimpleAdvancedTorBrowser(config)
+        elif choice == 7:
             print("🌍 Global exit nodes mode")
             config = SimpleTorConfig(
                 use_dutch_exit_nodes_only=False,
                 save_screenshots=True
             )
-        elif choice == 9:
+            browser = SimpleAdvancedTorBrowser(config)
+        elif choice == 8:
+            print("📊 Visual GA4 browser - Google Analytics compatible with human simulation")
+            browser = VisualTorBrowser()
+        elif choice == 11:
             return
         else:
             print("⚙️  Feature configuration coming soon...")
@@ -253,18 +285,53 @@ def browser_config():
             return
         
         # Test with selected config
-        if choice in [1, 2, 3, 4, 5, 6]:
+        if choice in [1, 2, 3, 4, 6, 7]:
             url = input("Enter test URL: ").strip()
             if url:
                 if not url.startswith(('http://', 'https://')):
                     url = 'https://' + url
                 
-                browser = SimpleAdvancedTorBrowser(config)
                 try:
-                    if browser.setup():
+                    if browser and browser.setup():
                         browser.comprehensive_page_visit(url)
                 finally:
+                    if browser:
+                        browser.cleanup()
+        elif choice == 5:
+            # Dutch rotation browser
+            print("🧪 Testing Dutch rotation browser with httpbin...")
+            if browser and isinstance(browser, DutchRotationBrowser):
+                try:
+                    if browser.setup():
+                        # Test httpbin features with rotation
+                        browser.test_httpbin_features()
+                finally:
                     browser.cleanup()
+            else:
+                print("❌ Browser type mismatch!")
+                input("Press Enter to continue...")
+                return
+        elif choice == 8:
+            # Visual GA4 browser
+            print("📊 Testing Visual GA4 browser...")
+            if browser and isinstance(browser, VisualTorBrowser):
+                url = input("Enter URL to visit with GA4 tracking: ").strip()
+                if url:
+                    if not url.startswith(('http://', 'https://')):
+                        url = 'https://' + url
+                    try:
+                        # Extract domain from URL for the browse method
+                        from urllib.parse import urlparse
+                        domain = urlparse(url).netloc
+                        print(f"🚀 Starting visual browsing session for {domain}...")
+                        result = browser.browse_website_visually(domain, duration_minutes=2)
+                        print(f"✅ Session completed: {result}")
+                    except Exception as e:
+                        print(f"❌ Error: {e}")
+            else:
+                print("❌ Browser type mismatch!")
+                input("Press Enter to continue...")
+                return
         
     except ValueError:
         print("❌ Please enter a valid number!")
