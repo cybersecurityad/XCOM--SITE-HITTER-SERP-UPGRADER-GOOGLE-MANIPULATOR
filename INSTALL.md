@@ -4,8 +4,8 @@
 
 ```bash
 # Clone and setup
-git clone https://github.com/jedixcom/seo-crawler-tor-ga.git
-cd seo-crawler-tor-ga
+git clone https://github.com/jedixcom/xcom-advanced-web-site-hitter.git
+cd xcom-advanced-web-site-hitter
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt

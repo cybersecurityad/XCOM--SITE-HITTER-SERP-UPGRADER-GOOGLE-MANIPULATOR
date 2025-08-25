@@ -76,8 +76,8 @@ Professional-grade web automation tool featuring **Dutch-only Tor exit nodes**, 
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/jedixcom/seo-crawler-tor-ga.git
-cd seo-crawler-tor-ga
+git clone https://github.com/jedixcom/xcom-advanced-web-site-hitter.git
+cd xcom-advanced-web-site-hitter
 ```
 
 2. **Install Tor via Homebrew**
