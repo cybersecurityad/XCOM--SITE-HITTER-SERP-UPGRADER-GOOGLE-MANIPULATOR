@@ -1,26 +1,8 @@
 #!/usr/bin/env python3
-#!/usr/bin/env python3
 """
-XCOM.DEV -- ADVANCED WEB SITE HITTER -- SERP UPGRADER- GOOGLE MANIPULATOR
-Professional SEO Enhancement & Web Automation Tool
-
-Licensed to:
-XCOM.DEV
-PW OLDENBURGER
-SINT OLOSSTEEG 4C
-1012AK AMSTERDAM
-NETHERLANDS
-JEDI@XCOM.DEV
-+31648319157
-
-© 2025 XCOM.DEV. All rights reserved.
-
-This software is proprietary and confidential. Unauthorized reproduction or 
-distribution of this program, or any portion of it, may result in severe civil 
-and criminal penalties, and will be prosecuted to the maximum extent possible 
-under the law.
-
-Main menu system for advanced SEO manipulation and web automation.
+Advanced Tor Browser Menu System
+Interactive menu interface for all Tor browser automation features
+Uses global configuration for unified Dutch rotation browser functionality
 """
 
 import os
@@ -38,14 +20,7 @@ GLOBAL_CONFIG = DutchRotationConfig(
     headless=False,
     max_retries=3,
     tor_port=9050,
-    control_port=9051,
-    # Human simulation settings
-    enable_human_simulation=True,
-    simulate_mouse_movements=True,
-    simulate_reading_behavior=True,
-    simulate_scrolling=True,
-    simulate_clicking=True,
-    behavior_profile="balanced"
+    control_port=9051
 )
 
 
@@ -57,24 +32,7 @@ def clear_screen():
 def show_banner():
     """Display the application banner"""
     clear_screen()
-    print("--")
     print("🔐 ADVANCED TOR BROWSER AUTOMATION")
-    print()
-    print("$$\\   $$\\  $$$$$$\\   $$$$$$\\  $$\\      $$\\     $$$$$$$\\  $$$$$$$$\\ $$\\    $$\\")
-    print("$$ |  $$ |$$  __$$\\ $$  __$$\\ $$$\\    $$$ |    $$  __$$\\ $$  _____|$$ |   $$ |")
-    print("\\$$\\ $$  |$$ /  \\__|$$ /  $$ |$$$$\\  $$$$ |    $$ |  $$ |$$ |      $$ |   $$ |")
-    print(" \\$$$$  / $$ |      $$ |  $$ |$$\\$$\\$$ $$ |    $$ |  $$ |$$$$$\\    \\$$\\  $$  /")
-    print(" $$  $$<  $$ |      $$ |  $$ |$$ \\$$$  $$ |    $$ |  $$ |$$  __|    \\$$\\$$  /")
-    print("$$  /\\$$\\ $$ |  $$\\ $$ |  $$ |$$ |\\$  /$$ |    $$ |  $$ |$$ |        \\$$$  /")
-    print("$$ /  $$ |\\$$$$$$  | $$$$$$  |$$ | \\_/ $$ |$$\\ $$$$$$$  |$$$$$$$$\\    \\$  /")
-    print("\\__|  \\__| \\______/  \\______/ \\__|     \\__|\\__|\\_______/ \\________|    \\_/")
-    print()
-    print("--")
-    print()
-    print("XCOM.DEV -- ADVANCED SITE HITTER --")
-    print()
-    print("--")
-    print()
     print("🇳🇱 Dutch-Only Exit Nodes with IP Rotation")
     print("=" * 45)
     print("🎯 All operations use unified Dutch rotation browser")
@@ -92,11 +50,7 @@ def custom_url_test():
     # Show current config briefly
     print(f"📋 Current config: {GLOBAL_CONFIG.rotation_interval} req rotation, "
           f"{GLOBAL_CONFIG.min_delay}-{GLOBAL_CONFIG.max_delay}s delay")
-    stay_time = getattr(GLOBAL_CONFIG, 'page_stay_time_minutes', 5.0)
-    repeat_count = getattr(GLOBAL_CONFIG, 'simulation_repeat_count', 1)
-    repeat_text = "infinite" if repeat_count == 0 else str(repeat_count)
-    print(f"⏰ Stay time: {stay_time} min, � Repeats: {repeat_text}")
-    print("�💡 Use option 4 to change configuration\n")
+    print("💡 Use option 4 to change configuration\n")
     
     url = input("Enter URL to test: ").strip()
     if not url:
@@ -117,72 +71,24 @@ def custom_url_test():
             print("✅ Dutch rotation browser setup successful!")
             print("🔄 Testing with current global configuration...")
             
-            # Implement repeat functionality
-            current_cycle = 0
-            total_visits = 0
-            
-            while True:
-                current_cycle += 1
-                
-                # Check if we should stop (finite repeats)
-                if repeat_count > 0 and current_cycle > repeat_count:
-                    print(f"\n🏁 Completed all {repeat_count} simulation cycles")
-                    break
-                
-                if repeat_count == 0:
-                    print(f"\n🔄 Starting infinite simulation cycle #{current_cycle}")
-                    print("   💡 Press Ctrl+C to stop at any time")
+            # Visit the URL multiple times to trigger rotation
+            visits = min(5, GLOBAL_CONFIG.rotation_interval + 2)  # Ensure rotation happens
+            for i in range(visits):
+                print(f"\n--- Visit {i+1}/{visits} ---")
+                success = browser.visit_with_rotation(url)
+                if success:
+                    print(f"✅ Visit {i+1} completed successfully")
+                    print(f"📊 Current IP: {browser.current_ip}")
+                    ua_display = browser.current_user_agent[:50] if browser.current_user_agent else "Unknown"
+                    print(f"🎭 Current UA: {ua_display}...")
                 else:
-                    print(f"\n🔄 Starting simulation cycle {current_cycle}/{repeat_count}")
-                
-                try:
-                    # Visit the URL and stay for specified time
-                    print(f"🌐 Visiting: {url}")
-                    success = browser.visit_with_rotation(url)
-                    
-                    if success:
-                        total_visits += 1
-                        print(f"✅ Visit successful")
-                        print(f"📊 Current IP: {browser.current_ip}")
-                        ua_display = browser.current_user_agent[:50] if browser.current_user_agent else "Unknown"
-                        print(f"🎭 Current UA: {ua_display}...")
-                        
-                        # Stay on page for specified time
-                        stay_seconds = stay_time * 60
-                        print(f"⏰ Staying on page for {stay_time} minutes ({stay_seconds:.0f} seconds)...")
-                        
-                        # Show progress every 30 seconds
-                        elapsed = 0
-                        while elapsed < stay_seconds:
-                            wait_time = min(30, stay_seconds - elapsed)
-                            time.sleep(wait_time)
-                            elapsed += wait_time
-                            remaining_mins = (stay_seconds - elapsed) / 60
-                            if remaining_mins > 0:
-                                print(f"   ⏳ {remaining_mins:.1f} minutes remaining...")
-                        
-                        print(f"✅ Completed {stay_time}-minute stay on page")
-                        
-                    else:
-                        print(f"❌ Visit failed")
-                        
-                except KeyboardInterrupt:
-                    print("\n\n⏹️  Simulation interrupted by user")
-                    break
-                    
-                # Brief pause between cycles
-                if repeat_count == 0 or current_cycle < repeat_count:
-                    print("⏸️  Brief pause before next cycle...")
-                    time.sleep(2)
+                    print(f"❌ Visit {i+1} failed")
             
-            print(f"\n🎉 Simulation completed!")
-            print(f"📈 Total successful visits: {total_visits}")
-            print(f"🔄 Total cycles completed: {current_cycle - (1 if repeat_count > 0 and current_cycle > repeat_count else 0)}")
-            print(f"� IP changes: {len(browser.session_data['ip_changes'])}")
+            print(f"\n🎉 Full simulation completed!")
+            print(f"📈 Total requests made: {browser.request_count}")
+            print(f"🔄 IP changes: {len(browser.session_data['ip_changes'])}")
         else:
             print("❌ Browser setup failed!")
-    except KeyboardInterrupt:
-        print("\n\n⏹️  Simulation interrupted by user")
     finally:
         browser.cleanup()
     
@@ -193,10 +99,7 @@ def show_current_config():
     """Display current global configuration"""
     clear_screen()
     print("📋 CURRENT CONFIGURATION")
-    print("=" * 40)
-    
-    # Basic settings
-    print("🔧 BASIC SETTINGS:")
+    print("=" * 30)
     print(f"🔄 Rotation interval: {GLOBAL_CONFIG.rotation_interval} requests")
     print(f"🎭 User agent rotation: {'✅ Enabled' if GLOBAL_CONFIG.user_agent_rotation else '❌ Disabled'}")
     print(f"🇳🇱 Verify Dutch IP: {'✅ Enabled' if GLOBAL_CONFIG.verify_dutch_ip else '❌ Disabled'}")
@@ -206,29 +109,6 @@ def show_current_config():
     print(f"🔍 Max retries: {GLOBAL_CONFIG.max_retries}")
     print(f"🗂️  Tor port: {GLOBAL_CONFIG.tor_port}")
     print(f"🎛️  Control port: {GLOBAL_CONFIG.control_port}")
-    
-    # Human simulation settings
-    print(f"\n🎭 HUMAN SIMULATION:")
-    print(f"🎪 Overall simulation: {'✅ Enabled' if GLOBAL_CONFIG.enable_human_simulation else '❌ Disabled'}")
-    if hasattr(GLOBAL_CONFIG, 'behavior_profile'):
-        print(f"🎯 Behavior profile: {GLOBAL_CONFIG.behavior_profile.capitalize()}")
-    if hasattr(GLOBAL_CONFIG, 'simulate_mouse_movements'):
-        print(f"🖱️  Mouse movements: {'✅ Enabled' if GLOBAL_CONFIG.simulate_mouse_movements else '❌ Disabled'}")
-    if hasattr(GLOBAL_CONFIG, 'simulate_scrolling'):
-        print(f"📜 Scrolling simulation: {'✅ Enabled' if GLOBAL_CONFIG.simulate_scrolling else '❌ Disabled'}")
-    if hasattr(GLOBAL_CONFIG, 'simulate_clicking'):
-        print(f"🔗 Link clicking: {'✅ Enabled' if GLOBAL_CONFIG.simulate_clicking else '❌ Disabled'}")
-    if hasattr(GLOBAL_CONFIG, 'simulate_reading_behavior'):
-        print(f"📖 Reading simulation: {'✅ Enabled' if GLOBAL_CONFIG.simulate_reading_behavior else '❌ Disabled'}")
-    
-    # Extended simulation settings
-    print(f"\n⏰ EXTENDED SIMULATION:")
-    if hasattr(GLOBAL_CONFIG, 'page_stay_time_minutes'):
-        print(f"⏰ Page stay time: {GLOBAL_CONFIG.page_stay_time_minutes} minutes")
-    if hasattr(GLOBAL_CONFIG, 'simulation_repeat_count'):
-        repeat_text = "Infinite" if GLOBAL_CONFIG.simulation_repeat_count == 0 else str(GLOBAL_CONFIG.simulation_repeat_count)
-        print(f"🔁 Simulation repeats: {repeat_text}")
-    
     input("\nPress Enter to continue...")
 
 
@@ -309,17 +189,10 @@ def browser_config():
     print("8. 🇳🇱 Toggle Dutch IP verification")
     print("9. ⏱️  Set delay range")
     print("10. 📋 Show current configuration")
-    print("11. 🎪 Toggle human simulation")
-    print("12. 🎯 Set behavior profile")
-    print("13. 🖱️  Configure mouse simulation")
-    print("14. 📜 Configure scrolling simulation")
-    print("15. 🔗 Configure link clicking")
-    print("16. ⏰ Set page stay time (10-60 minutes)")
-    print("17. 🔁 Set simulation repeat count")
-    print("18. 🔙 Back to main menu")
+    print("11. 🔙 Back to main menu")
     
     try:
-        choice = int(input("\nSelect option (1-18): "))
+        choice = int(input("\nSelect option (1-11): "))
         
         if choice == 1:
             print("🏃 Fast mode selected")
@@ -381,60 +254,6 @@ def browser_config():
             show_current_config()
             return
         elif choice == 11:
-            GLOBAL_CONFIG.enable_human_simulation = not GLOBAL_CONFIG.enable_human_simulation
-            status = "enabled" if GLOBAL_CONFIG.enable_human_simulation else "disabled"
-            print(f"🎪 Human simulation {status}")
-        elif choice == 12:
-            profiles = ["balanced", "curious", "focused", "scanner"]
-            print("\nAvailable behavior profiles:")
-            for i, profile in enumerate(profiles, 1):
-                current = " (current)" if profile == GLOBAL_CONFIG.behavior_profile else ""
-                print(f"  {i}. {profile.capitalize()}{current}")
-            try:
-                profile_choice = int(input("Select profile (1-4): ")) - 1
-                if 0 <= profile_choice < len(profiles):
-                    GLOBAL_CONFIG.behavior_profile = profiles[profile_choice]
-                    print(f"✅ Behavior profile set to {profiles[profile_choice]}")
-                else:
-                    print("❌ Invalid choice")
-            except ValueError:
-                print("❌ Invalid input")
-        elif choice == 13:
-            GLOBAL_CONFIG.simulate_mouse_movements = not GLOBAL_CONFIG.simulate_mouse_movements
-            status = "enabled" if GLOBAL_CONFIG.simulate_mouse_movements else "disabled"
-            print(f"🖱️  Mouse simulation {status}")
-        elif choice == 14:
-            GLOBAL_CONFIG.simulate_scrolling = not GLOBAL_CONFIG.simulate_scrolling
-            status = "enabled" if GLOBAL_CONFIG.simulate_scrolling else "disabled"
-            print(f"📜 Scrolling simulation {status}")
-        elif choice == 15:
-            GLOBAL_CONFIG.simulate_clicking = not GLOBAL_CONFIG.simulate_clicking
-            status = "enabled" if GLOBAL_CONFIG.simulate_clicking else "disabled"
-            print(f"🔗 Link clicking simulation {status}")
-        elif choice == 16:
-            try:
-                stay_time = float(input("Enter page stay time in minutes (10-60): "))
-                if 10.0 <= stay_time <= 60.0:
-                    GLOBAL_CONFIG.page_stay_time_minutes = stay_time
-                    print(f"✅ Page stay time set to {stay_time} minutes")
-                else:
-                    print("❌ Stay time must be between 10 and 60 minutes")
-            except ValueError:
-                print("❌ Invalid input")
-        elif choice == 17:
-            try:
-                repeat_count = int(input("Enter simulation repeat count (1+ for limited, 0 for infinite): "))
-                if repeat_count >= 0:
-                    GLOBAL_CONFIG.simulation_repeat_count = repeat_count
-                    if repeat_count == 0:
-                        print("✅ Simulation repeat count set to INFINITE")
-                    else:
-                        print(f"✅ Simulation repeat count set to {repeat_count}")
-                else:
-                    print("❌ Repeat count must be 0 or positive")
-            except ValueError:
-                print("❌ Invalid input")
-        elif choice == 18:
             return
         else:
             print("❌ Invalid choice!")
@@ -444,11 +263,11 @@ def browser_config():
     except Exception as e:
         print(f"❌ Error: {e}")
     
-    if choice != 18 and choice != 10:
+    if choice != 11 and choice != 10:
         input("\nPress Enter to continue...")
     
     # Recursively show the menu again unless returning
-    if choice != 18:
+    if choice != 11:
         browser_config()
 
 

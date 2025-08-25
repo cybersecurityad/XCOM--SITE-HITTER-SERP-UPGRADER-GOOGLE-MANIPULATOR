@@ -1,7 +1,21 @@
 #!/usr/bin/env python3
 """
+XCOM.DEV -- ADVANCED WEB SITE HITTER -- SERP UPGRADER- GOOGLE MANIPULATOR
+
 🎯 WEBSITE CRAWLER WITH HUMAN SIMULATION (TOR-READY)
 ==================================================
+
+Licensed to:
+XCOM.DEV
+PW OLDENBURGER
+SINT OLOSSTEEG 4C
+1012AK AMSTERDAM
+NETHERLANDS
+JEDI@XCOM.DEV
++31648319157
+
+© 2025 XCOM.DEV. All rights reserved.
+
 Complete website crawling system with human behavior simulation.
 Ready for Tor integration once Tor is installed.
 
