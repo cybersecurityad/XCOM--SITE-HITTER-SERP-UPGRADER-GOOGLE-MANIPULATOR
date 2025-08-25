@@ -14,6 +14,9 @@ import socket
 import signal
 import sys
 import json
+import os
+import glob
+import shutil
 from typing import List, Optional, Dict, Any
 from dataclasses import dataclass, field
 from contextlib import closing
@@ -34,6 +37,7 @@ class SimpleTorConfig:
     tor_port: int = 9050
     auto_start_tor: bool = True
     verify_tor_ip: bool = True
+    use_dutch_exit_nodes_only: bool = False  # NEW: Force Dutch exit nodes only
     
     # Browser settings
     page_load_timeout: int = 30
@@ -59,6 +63,8 @@ class SimpleAdvancedTorBrowser:
         self.config = config or SimpleTorConfig()
         self.driver: Optional[uc.Chrome] = None
         self.tor_running = False
+        self.tor_process = None  # For Dutch-only Tor process
+        self.torrc_path = None   # For Dutch-only Tor config
         self.session_data = {
             'start_time': time.time(),
             'requests_made': 0,
@@ -77,7 +83,8 @@ class SimpleAdvancedTorBrowser:
         signal.signal(signal.SIGINT, self._signal_handler)
         signal.signal(signal.SIGTERM, self._signal_handler)
         
-        print("🚀 Simple Advanced Tor Browser initialized")
+        mode = "🇳🇱 Dutch-only" if self.config.use_dutch_exit_nodes_only else "🌍 Global"
+        print(f"🚀 Simple Advanced Tor Browser initialized ({mode} exit nodes)")
     
     def _signal_handler(self, signum, frame):
         """Handle shutdown signals gracefully"""
@@ -106,13 +113,22 @@ class SimpleAdvancedTorBrowser:
         """Start Homebrew Tor service if needed"""
         if self.check_homebrew_tor():
             return True
-            
+        
         print("🔄 Starting Homebrew Tor service...")
+        
+        # Check if Dutch-only exit nodes are requested
+        if self.config.use_dutch_exit_nodes_only:
+            return self.start_dutch_only_tor()
+        else:
+            return self.start_default_tor()
+    
+    def start_default_tor(self) -> bool:
+        """Start default Homebrew Tor service"""
         try:
             result = subprocess.run(['brew', 'services', 'start', 'tor'], 
                                   capture_output=True, text=True, timeout=30)
             if result.returncode == 0:
-                print("✅ Homebrew Tor service started")
+                print("✅ Homebrew Tor service started (global exit nodes)")
                 time.sleep(5)
                 return self.check_homebrew_tor()
             else:
@@ -120,6 +136,60 @@ class SimpleAdvancedTorBrowser:
                 return False
         except Exception as e:
             print(f"❌ Error starting Tor: {e}")
+            return False
+    
+    def start_dutch_only_tor(self) -> bool:
+        """Start Tor with Dutch exit nodes only"""
+        try:
+            print("🇳🇱 Starting Tor with Dutch exit nodes only...")
+            
+            # Stop existing Tor service
+            subprocess.run(['brew', 'services', 'stop', 'tor'], 
+                         capture_output=True)
+            time.sleep(2)
+            
+            # Create temporary torrc for Dutch-only
+            torrc_content = f"""
+# Dutch-only Tor configuration
+SocksPort {self.config.tor_port}
+DataDirectory /tmp/tor_dutch_data_{os.getpid()}
+ExitNodes {{nl}}
+StrictNodes 1
+Log notice stdout
+"""
+            
+            # Write torrc file
+            self.torrc_path = f"/tmp/torrc_dutch_{os.getpid()}"
+            with open(self.torrc_path, 'w') as f:
+                f.write(torrc_content)
+            
+            print(f"📝 Dutch-only torrc created: {self.torrc_path}")
+            
+            # Start Tor with custom config
+            cmd = ['/opt/homebrew/bin/tor', '-f', self.torrc_path]
+            print(f"🚀 Starting Dutch-only Tor: {' '.join(cmd)}")
+            
+            self.tor_process = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            
+            # Wait for Tor to start
+            print("⏰ Waiting for Dutch-only Tor to start...")
+            for i in range(30):  # 30 second timeout
+                if self.check_homebrew_tor():
+                    print("✅ Dutch-only Tor service started successfully")
+                    return True
+                time.sleep(1)
+                print(f"   Waiting... {i+1}/30")
+            
+            print("❌ Dutch-only Tor failed to start within timeout")
+            return False
+            
+        except Exception as e:
+            print(f"❌ Error starting Dutch-only Tor: {e}")
             return False
     
     def get_tor_ip(self) -> Optional[str]:
@@ -412,7 +482,48 @@ class SimpleAdvancedTorBrowser:
             except Exception as e:
                 print(f"⚠️  Error closing browser: {e}")
         
+        # Clean up Dutch-only Tor if running
+        if self.config.use_dutch_exit_nodes_only:
+            self.cleanup_dutch_tor()
+        
         print("✅ Cleanup completed")
+    
+    def cleanup_dutch_tor(self):
+        """Clean up Dutch-only Tor process and files"""
+        try:
+            # Stop custom Tor process
+            if self.tor_process:
+                print("🔄 Stopping Dutch-only Tor process...")
+                self.tor_process.terminate()
+                try:
+                    self.tor_process.wait(timeout=5)
+                    print("✅ Dutch-only Tor process stopped")
+                except subprocess.TimeoutExpired:
+                    self.tor_process.kill()
+                    print("⚠️  Dutch-only Tor process force killed")
+            
+            # Remove temporary torrc file
+            if self.torrc_path and os.path.exists(self.torrc_path):
+                os.remove(self.torrc_path)
+                print(f"🗑️  Removed torrc: {self.torrc_path}")
+            
+            # Clean up data directory
+            data_dirs = glob.glob(f"/tmp/tor_dutch_data_{os.getpid()}")
+            for data_dir in data_dirs:
+                shutil.rmtree(data_dir, ignore_errors=True)
+                print(f"🗑️  Removed data dir: {data_dir}")
+            
+        except Exception as e:
+            print(f"⚠️  Error cleaning up Dutch-only Tor: {e}")
+        
+        # Restart default Homebrew Tor service
+        try:
+            print("🔄 Restarting default Homebrew Tor service...")
+            subprocess.run(['brew', 'services', 'start', 'tor'], 
+                         capture_output=True, timeout=10)
+            print("✅ Default Homebrew Tor service restored")
+        except Exception as e:
+            print(f"⚠️  Error restarting default Tor: {e}")
 
 
 def main():
