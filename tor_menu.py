@@ -668,6 +668,170 @@ def google_search_visit():
     input("\nPress Enter to continue...")
 
 
+def website_search_and_click():
+    """Visit a website and search for keywords to find and click specific links"""
+    clear_screen()
+    print("🔍 WEBSITE SEARCH & CLICK")
+    print("=" * 50)
+    print("🇳🇱 Using Dutch rotation browser with current global configuration")
+    print("🌐 Will visit website and search for keywords to find specific links")
+    print("🎯 Finds and clicks on matching article/page links")
+    print()
+    
+    # Get target website
+    target_website = input("Enter website URL to visit: ").strip()
+    if not target_website:
+        print("❌ No website URL provided!")
+        input("\nPress Enter to continue...")
+        return
+    
+    # Add protocol if not present
+    if not target_website.startswith(('http://', 'https://')):
+        target_website = 'https://' + target_website
+    
+    # Get search keywords
+    search_keywords = input("Enter keywords to search for on the page: ").strip()
+    if not search_keywords:
+        print("❌ No search keywords provided!")
+        input("\nPress Enter to continue...")
+        return
+    
+    print(f"🌐 Target website: {target_website}")
+    print(f"🔍 Search keywords: {search_keywords}")
+    print("🎯 Will search page content for matching links...")
+    
+    browser = DutchRotationBrowser(GLOBAL_CONFIG)
+    
+    try:
+        if browser.setup():
+            print("✅ Browser setup successful!")
+            print()
+            
+            # Visit target website
+            print(f"🌐 Visiting {target_website}...")
+            if browser.visit_with_rotation(target_website):
+                time.sleep(random.uniform(3, 5))
+                
+                try:
+                    # Search for links containing the keywords
+                    print(f"🔍 Searching for links containing: {search_keywords}")
+                    
+                    # Try to find all links on the page
+                    all_links = browser.driver.find_elements(By.TAG_NAME, "a")
+                    matching_links = []
+                    
+                    # Filter links that contain the search keywords
+                    keywords_lower = search_keywords.lower()
+                    for link in all_links:
+                        try:
+                            link_text = link.text.strip()
+                            link_href = link.get_attribute('href')
+                            
+                            if link_text and link_href:
+                                # Check if keywords are in the link text
+                                if keywords_lower in link_text.lower():
+                                    matching_links.append({
+                                        'element': link,
+                                        'text': link_text,
+                                        'href': link_href
+                                    })
+                        except:
+                            continue
+                    
+                    if matching_links:
+                        print(f"🎯 Found {len(matching_links)} matching links:")
+                        print("-" * 60)
+                        
+                        # Display all matching links
+                        for i, link_info in enumerate(matching_links, 1):
+                            print(f"{i}. {link_info['text']}")
+                            print(f"   URL: {link_info['href']}")
+                            print()
+                        
+                        # Ask user which link to click
+                        try:
+                            if len(matching_links) == 1:
+                                choice = 1
+                                print("✅ Only one match found, automatically selecting it.")
+                            else:
+                                choice = int(input(f"Select link to click (1-{len(matching_links)}): "))
+                                
+                            if 1 <= choice <= len(matching_links):
+                                selected_link = matching_links[choice - 1]
+                                print(f"🎯 Clicking on: {selected_link['text']}")
+                                print(f"📍 Target URL: {selected_link['href']}")
+                                
+                                # Scroll the element into view and click
+                                browser.driver.execute_script("arguments[0].scrollIntoView(true);", selected_link['element'])
+                                time.sleep(random.uniform(1, 2))
+                                
+                                # Click the selected link
+                                selected_link['element'].click()
+                                
+                                # Wait for page to load
+                                time.sleep(random.uniform(3, 6))
+                                
+                                print("✅ Successfully clicked on the selected link!")
+                                current_url = browser.driver.current_url
+                                print(f"📍 Current URL: {current_url}")
+                                
+                                # Perform human simulation on the target page
+                                if browser.config.enable_human_simulation:
+                                    print("🎭 Performing human simulation on target page...")
+                                    browser.simulate_mouse_movements()
+                                    browser.simulate_scrolling_behavior(current_url)
+                                    browser.find_and_click_interesting_links(current_url)
+                                
+                                # Stay on page for configured time
+                                stay_time = browser.config.page_stay_time_minutes
+                                print(f"⏰ Staying on page for {stay_time} minutes...")
+                                
+                                # Break stay time into smaller chunks
+                                total_seconds = stay_time * 60
+                                chunk_size = 30  # 30 second chunks
+                                chunks = int(total_seconds / chunk_size)
+                                
+                                for i in range(chunks):
+                                    time.sleep(chunk_size)
+                                    if i % 4 == 0:  # Every 2 minutes, show progress
+                                        remaining_time = (chunks - i - 1) * chunk_size / 60
+                                        print(f"⏳ Time remaining: {remaining_time:.1f} minutes")
+                                        
+                                        # Random small interactions
+                                        if random.random() < 0.3:  # 30% chance
+                                            if browser.driver:
+                                                browser.driver.execute_script("window.scrollBy(0, Math.random() * 200 - 100);")
+                                
+                                print("✅ Website search and click completed!")
+                                
+                            else:
+                                print("❌ Invalid selection!")
+                                
+                        except ValueError:
+                            print("❌ Invalid input!")
+                            
+                    else:
+                        print(f"❌ No links found containing keywords: {search_keywords}")
+                        print("💡 Try different keywords or check if the content loaded properly")
+                        
+                except Exception as e:
+                    print(f"❌ Error searching for links: {e}")
+                    
+            else:
+                print("❌ Failed to visit target website")
+                
+        else:
+            print("❌ Browser setup failed!")
+            
+    except Exception as e:
+        print(f"❌ Error during website search and click: {e}")
+        
+    finally:
+        browser.cleanup()
+    
+    input("\nPress Enter to continue...")
+
+
 def simple_tor_test():
     """Simple Tor connectivity test"""
     from selenium import webdriver
@@ -714,31 +878,34 @@ def main_menu():
         print("Main Menu:")
         print("1. 🎯 Custom URL (Full Simulation)")
         print("2. 🦆 Search Keywords & Visit URL through DuckDuckGo")
-        print("3. ⚙️  Browser Configuration")
-        print("4. 📋 Show Current Configuration")
-        print("5. 🧪 Simple Tor Test")
-        print("6. 🚪 Exit")
+        print("3. 🔍 Website Search & Click (Find keywords on page)")
+        print("4. ⚙️  Browser Configuration")
+        print("5. 📋 Show Current Configuration")
+        print("6. 🧪 Simple Tor Test")
+        print("7. 🚪 Exit")
         print()
         
         try:
-            choice = input("Select option (1-6): ").strip()
+            choice = input("Select option (1-7): ").strip()
             
             if choice == '1':
                 custom_url_test()
             elif choice == '2':
                 google_search_visit()
             elif choice == '3':
-                browser_config()
+                website_search_and_click()
             elif choice == '4':
-                show_current_config()
+                browser_config()
             elif choice == '5':
-                simple_tor_test()
+                show_current_config()
             elif choice == '6':
+                simple_tor_test()
+            elif choice == '7':
                 clear_screen()
                 print("👋 Goodbye!")
                 break
             else:
-                print("❌ Invalid choice! Please select 1-6.")
+                print("❌ Invalid choice! Please select 1-7.")
                 time.sleep(1)
                 
         except KeyboardInterrupt:
