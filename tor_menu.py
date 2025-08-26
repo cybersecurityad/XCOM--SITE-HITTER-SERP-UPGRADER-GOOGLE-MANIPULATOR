@@ -748,67 +748,57 @@ def website_search_and_click():
                             print(f"   URL: {link_info['href']}")
                             print()
                         
-                        # Ask user which link to click
+                        # Automatically click the first matching link
+                        selected_link = matching_links[0]
+                        print(f"🎯 Automatically clicking first match: {selected_link['text']}")
+                        print(f"📍 Target URL: {selected_link['href']}")
+                        
                         try:
-                            if len(matching_links) == 1:
-                                choice = 1
-                                print("✅ Only one match found, automatically selecting it.")
-                            else:
-                                choice = int(input(f"Select link to click (1-{len(matching_links)}): "))
-                                
-                            if 1 <= choice <= len(matching_links):
-                                selected_link = matching_links[choice - 1]
-                                print(f"🎯 Clicking on: {selected_link['text']}")
-                                print(f"📍 Target URL: {selected_link['href']}")
-                                
-                                # Scroll the element into view and click
-                                browser.driver.execute_script("arguments[0].scrollIntoView(true);", selected_link['element'])
-                                time.sleep(random.uniform(1, 2))
-                                
-                                # Click the selected link
-                                selected_link['element'].click()
-                                
-                                # Wait for page to load
-                                time.sleep(random.uniform(3, 6))
-                                
-                                print("✅ Successfully clicked on the selected link!")
-                                current_url = browser.driver.current_url
-                                print(f"📍 Current URL: {current_url}")
-                                
-                                # Perform human simulation on the target page
-                                if browser.config.enable_human_simulation:
-                                    print("🎭 Performing human simulation on target page...")
-                                    browser.simulate_mouse_movements()
-                                    browser.simulate_scrolling_behavior(current_url)
-                                    browser.find_and_click_interesting_links(current_url)
-                                
-                                # Stay on page for configured time
-                                stay_time = browser.config.page_stay_time_minutes
-                                print(f"⏰ Staying on page for {stay_time} minutes...")
-                                
-                                # Break stay time into smaller chunks
-                                total_seconds = stay_time * 60
-                                chunk_size = 30  # 30 second chunks
-                                chunks = int(total_seconds / chunk_size)
-                                
-                                for i in range(chunks):
-                                    time.sleep(chunk_size)
-                                    if i % 4 == 0:  # Every 2 minutes, show progress
-                                        remaining_time = (chunks - i - 1) * chunk_size / 60
-                                        print(f"⏳ Time remaining: {remaining_time:.1f} minutes")
-                                        
-                                        # Random small interactions
-                                        if random.random() < 0.3:  # 30% chance
-                                            if browser.driver:
-                                                browser.driver.execute_script("window.scrollBy(0, Math.random() * 200 - 100);")
-                                
-                                print("✅ Website search and click completed!")
-                                
-                            else:
-                                print("❌ Invalid selection!")
-                                
-                        except ValueError:
-                            print("❌ Invalid input!")
+                            # Scroll the element into view and click
+                            browser.driver.execute_script("arguments[0].scrollIntoView(true);", selected_link['element'])
+                            time.sleep(random.uniform(1, 2))
+                            
+                            # Click the selected link
+                            selected_link['element'].click()
+                            
+                            # Wait for page to load
+                            time.sleep(random.uniform(3, 6))
+                            
+                            print("✅ Successfully clicked on the selected link!")
+                            current_url = browser.driver.current_url
+                            print(f"📍 Current URL: {current_url}")
+                            
+                            # Perform human simulation on the target page
+                            if browser.config.enable_human_simulation:
+                                print("🎭 Performing human simulation on target page...")
+                                browser.simulate_mouse_movements()
+                                browser.simulate_scrolling_behavior(current_url)
+                                browser.find_and_click_interesting_links(current_url)
+                            
+                            # Stay on page for configured time
+                            stay_time = browser.config.page_stay_time_minutes
+                            print(f"⏰ Staying on page for {stay_time} minutes...")
+                            
+                            # Break stay time into smaller chunks
+                            total_seconds = stay_time * 60
+                            chunk_size = 30  # 30 second chunks
+                            chunks = int(total_seconds / chunk_size)
+                            
+                            for i in range(chunks):
+                                time.sleep(chunk_size)
+                                if i % 4 == 0:  # Every 2 minutes, show progress
+                                    remaining_time = (chunks - i - 1) * chunk_size / 60
+                                    print(f"⏳ Time remaining: {remaining_time:.1f} minutes")
+                                    
+                                    # Random small interactions
+                                    if random.random() < 0.3:  # 30% chance
+                                        if browser.driver:
+                                            browser.driver.execute_script("window.scrollBy(0, Math.random() * 200 - 100);")
+                            
+                            print("✅ Website search and click completed!")
+                            
+                        except Exception as e:
+                            print(f"❌ Error clicking link: {e}")
                             
                     else:
                         print(f"❌ No links found containing keywords: {search_keywords}")
