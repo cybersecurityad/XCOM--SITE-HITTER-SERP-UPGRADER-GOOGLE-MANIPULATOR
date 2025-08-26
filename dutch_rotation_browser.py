@@ -622,7 +622,7 @@ Log notice stdout
         return reading_time
     
     def simulate_mouse_movements(self):
-        """Simulate realistic mouse movements"""
+        """Simulate realistic mouse movements with safe bounds"""
         if (not self.behavior_engine or 
             not self.config.simulate_mouse_movements or 
             not self.driver or
@@ -630,17 +630,49 @@ Log notice stdout
             return
         
         try:
+            # Get window size to calculate safe bounds
+            window_size = self.driver.get_window_size()
+            window_width = window_size['width']
+            window_height = window_size['height']
+            
+            # Calculate safe movement area (leave margins)
+            safe_margin = 50
+            max_x = window_width - safe_margin
+            max_y = window_height - safe_margin
+            min_x = safe_margin
+            min_y = safe_margin
+            
             actions = ActionChains(self.driver)
             
-            # 3-7 random mouse movements
+            # 3-7 random mouse movements within safe bounds
             num_movements = random.randint(3, 7)
             print(f"🖱️ Simulating {num_movements} mouse movements...")
             
+            # Start from center
+            center_x = window_width // 2
+            center_y = window_height // 2
+            current_x = center_x
+            current_y = center_y
+            
             for i in range(num_movements):
-                x_offset = random.randint(-200, 200)
-                y_offset = random.randint(-100, 100)
-                actions.move_by_offset(x_offset, y_offset)
-                actions.pause(random.uniform(0.1, 0.5))
+                # Calculate safe offset that won't go out of bounds
+                max_x_offset = min(50, max_x - current_x, current_x - min_x)
+                max_y_offset = min(50, max_y - current_y, current_y - min_y)
+                
+                if max_x_offset > 0 and max_y_offset > 0:
+                    x_offset = random.randint(-max_x_offset, max_x_offset)
+                    y_offset = random.randint(-max_y_offset, max_y_offset)
+                    
+                    # Update current position
+                    current_x += x_offset
+                    current_y += y_offset
+                    
+                    # Ensure we stay within bounds
+                    current_x = max(min_x, min(current_x, max_x))
+                    current_y = max(min_y, min(current_y, max_y))
+                    
+                    actions.move_by_offset(x_offset, y_offset)
+                    actions.pause(random.uniform(0.1, 0.5))
             
             actions.perform()
             
