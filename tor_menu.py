@@ -754,12 +754,36 @@ def website_search_and_click():
                         print(f"📍 Target URL: {selected_link['href']}")
                         
                         try:
-                            # Scroll the element into view and click
-                            browser.driver.execute_script("arguments[0].scrollIntoView(true);", selected_link['element'])
-                            time.sleep(random.uniform(1, 2))
+                            # Multiple click strategies for better reliability
+                            link_element = selected_link['element']
+                            link_url = selected_link['href']
                             
-                            # Click the selected link
-                            selected_link['element'].click()
+                            print("🎯 Attempting to click link using multiple strategies...")
+                            
+                            # Strategy 1: Scroll and wait, then normal click
+                            try:
+                                browser.driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", link_element)
+                                time.sleep(random.uniform(2, 3))
+                                link_element.click()
+                                print("✅ Successfully clicked using normal click")
+                            except Exception as e1:
+                                print(f"⚠️ Normal click failed: {str(e1)[:100]}...")
+                                
+                                # Strategy 2: JavaScript click
+                                try:
+                                    browser.driver.execute_script("arguments[0].click();", link_element)
+                                    print("✅ Successfully clicked using JavaScript click")
+                                except Exception as e2:
+                                    print(f"⚠️ JavaScript click failed: {str(e2)[:100]}...")
+                                    
+                                    # Strategy 3: Navigate directly to URL
+                                    try:
+                                        print(f"🔗 Navigating directly to: {link_url}")
+                                        browser.driver.get(link_url)
+                                        print("✅ Successfully navigated directly to URL")
+                                    except Exception as e3:
+                                        print(f"❌ All click strategies failed: {str(e3)[:100]}...")
+                                        raise e3
                             
                             # Wait for page to load
                             time.sleep(random.uniform(3, 6))
