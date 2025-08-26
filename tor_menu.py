@@ -668,6 +668,44 @@ def google_search_visit():
     input("\nPress Enter to continue...")
 
 
+def simple_tor_test():
+    """Simple Tor connectivity test"""
+    from selenium import webdriver
+    from selenium.webdriver.chrome.options import Options
+    
+    clear_screen()
+    print("🧪 SIMPLE TOR CONNECTIVITY TEST")
+    print("=" * 40)
+    
+    chrome_options = Options()
+    chrome_options.add_argument('--proxy-server=socks5://127.0.0.1:9050')
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    
+    try:
+        print("🔍 Testing basic Tor connection on port 9050...")
+        driver = webdriver.Chrome(options=chrome_options)
+        driver.get("https://httpbin.org/ip")
+        time.sleep(2)
+        
+        ip_info = driver.find_element(By.TAG_NAME, "body").text
+        print(f"✅ Tor connection successful!")
+        print(f"📍 IP info: {ip_info}")
+        
+        driver.quit()
+        return True
+        
+    except Exception as e:
+        print(f"❌ Tor connectivity failed: {e}")
+        print("\n💡 Try these fixes:")
+        print("1. brew services restart tor")
+        print("2. Check: brew services list | grep tor")
+        print("3. View logs: tail /opt/homebrew/var/log/tor.log")
+        return False
+    
+    input("\nPress Enter to continue...")
+
+
 def main_menu():
     """Display the main menu and handle user selections"""
     while True:
@@ -678,11 +716,12 @@ def main_menu():
         print("2. 🦆 Search Keywords & Visit URL through DuckDuckGo")
         print("3. ⚙️  Browser Configuration")
         print("4. 📋 Show Current Configuration")
-        print("5. 🚪 Exit")
+        print("5. 🧪 Simple Tor Test")
+        print("6. 🚪 Exit")
         print()
         
         try:
-            choice = input("Select option (1-5): ").strip()
+            choice = input("Select option (1-6): ").strip()
             
             if choice == '1':
                 custom_url_test()
@@ -693,11 +732,13 @@ def main_menu():
             elif choice == '4':
                 show_current_config()
             elif choice == '5':
+                simple_tor_test()
+            elif choice == '6':
                 clear_screen()
                 print("👋 Goodbye!")
                 break
             else:
-                print("❌ Invalid choice! Please select 1-7.")
+                print("❌ Invalid choice! Please select 1-6.")
                 time.sleep(1)
                 
         except KeyboardInterrupt:
