@@ -696,8 +696,15 @@ def website_search_and_click():
         input("\nPress Enter to continue...")
         return
     
+    # Get target URL to look for if keywords don't match
+    target_url = input("Enter target URL to click (if keywords don't match): ").strip()
+    if target_url and not target_url.startswith(('http://', 'https://')):
+        target_url = 'https://' + target_url
+    
     print(f"🌐 Target website: {target_website}")
     print(f"🔍 Search keywords: {search_keywords}")
+    if target_url:
+        print(f"🎯 Fallback target URL: {target_url}")
     print("🎯 Will search page content for matching links...")
     
     browser = DutchRotationBrowser(GLOBAL_CONFIG)
@@ -719,8 +726,9 @@ def website_search_and_click():
                     # Try to find all links on the page
                     all_links = browser.driver.find_elements(By.TAG_NAME, "a")
                     matching_links = []
+                    url_matching_links = []
                     
-                    # Filter links that contain the search keywords
+                    # Filter links that contain the search keywords or URL
                     keywords_lower = search_keywords.lower()
                     for link in all_links:
                         try:
@@ -728,29 +736,49 @@ def website_search_and_click():
                             link_href = link.get_attribute('href')
                             
                             if link_text and link_href:
-                                # Check if keywords are in the link text
+                                # Priority 1: Check if keywords are in the link text
                                 if keywords_lower in link_text.lower():
                                     matching_links.append({
                                         'element': link,
                                         'text': link_text,
-                                        'href': link_href
+                                        'href': link_href,
+                                        'match_type': 'keyword'
+                                    })
+                                # Priority 2: Check if target URL matches (if provided)
+                                elif target_url and (target_url in link_href or link_href.startswith(target_url)):
+                                    url_matching_links.append({
+                                        'element': link,
+                                        'text': link_text,
+                                        'href': link_href,
+                                        'match_type': 'url'
                                     })
                         except:
                             continue
                     
+                    # Use keyword matches first, then URL matches as fallback
                     if matching_links:
-                        print(f"🎯 Found {len(matching_links)} matching links:")
+                        selected_links = matching_links
+                        print(f"🎯 Found {len(matching_links)} keyword matching links:")
+                    elif url_matching_links:
+                        selected_links = url_matching_links
+                        print(f"🔗 No keyword matches found, using {len(url_matching_links)} URL matching links:")
+                    else:
+                        selected_links = []
+                    
+                    if selected_links:
                         print("-" * 60)
                         
                         # Display all matching links
-                        for i, link_info in enumerate(matching_links, 1):
-                            print(f"{i}. {link_info['text']}")
+                        for i, link_info in enumerate(selected_links, 1):
+                            match_type = "🔍 Keyword" if link_info['match_type'] == 'keyword' else "🔗 URL"
+                            print(f"{i}. [{match_type}] {link_info['text']}")
                             print(f"   URL: {link_info['href']}")
                             print()
                         
                         # Automatically click the first matching link
-                        selected_link = matching_links[0]
-                        print(f"🎯 Automatically clicking first match: {selected_link['text']}")
+                        selected_link = selected_links[0]
+                        match_type_desc = "keyword match" if selected_link['match_type'] == 'keyword' else "URL match"
+                        print(f"🎯 Automatically clicking first {match_type_desc}: {selected_link['text']}")
                         print(f"📍 Target URL: {selected_link['href']}")
                         
                         try:
@@ -825,8 +853,11 @@ def website_search_and_click():
                             print(f"❌ Error clicking link: {e}")
                             
                     else:
-                        print(f"❌ No links found containing keywords: {search_keywords}")
-                        print("💡 Try different keywords or check if the content loaded properly")
+                        if target_url:
+                            print(f"❌ No links found containing keywords '{search_keywords}' or matching URL '{target_url}'")
+                        else:
+                            print(f"❌ No links found containing keywords: {search_keywords}")
+                        print("💡 Try different keywords, provide a target URL, or check if the content loaded properly")
                         
                 except Exception as e:
                     print(f"❌ Error searching for links: {e}")
