@@ -915,6 +915,92 @@ def simple_tor_test():
     input("\nPress Enter to continue...")
 
 
+def reset_tor_connection():
+    """Reset Tor connection and restart service safely"""
+    clear_screen()
+    print("🔄 RESET TOR CONNECTION")
+    print("=" * 40)
+    print("🔧 Safely resetting Tor service and clearing circuits...")
+    
+    import subprocess
+    
+    try:
+        # Stop Tor service gracefully first
+        print("🛑 Stopping Tor service gracefully...")
+        result = subprocess.run(['brew', 'services', 'stop', 'tor'], 
+                              capture_output=True, text=True, timeout=10)
+        if result.returncode == 0:
+            print("✅ Tor service stopped gracefully")
+        else:
+            print(f"⚠️ Tor stop result: {result.stderr}")
+        
+        time.sleep(3)  # Give it time to stop properly
+        
+        # Only kill specific tor processes (not all processes containing "tor")
+        print("🧹 Cleaning up remaining Tor processes safely...")
+        try:
+            # More specific process killing - only actual tor daemon
+            subprocess.run(['pkill', '-x', 'tor'], capture_output=True, timeout=5)
+            subprocess.run(['pkill', '-f', '/opt/homebrew/bin/tor'], capture_output=True, timeout=5)
+        except subprocess.TimeoutExpired:
+            print("⚠️ Process cleanup timeout - continuing anyway")
+        
+        time.sleep(2)
+        
+        # Clear Tor data directory safely
+        print("🧹 Clearing Tor data directory...")
+        import os
+        tor_data_dirs = [
+            '/opt/homebrew/var/lib/tor',
+            '/usr/local/var/lib/tor'
+        ]
+        
+        for tor_dir in tor_data_dirs:
+            if os.path.exists(tor_dir):
+                try:
+                    print(f"🧹 Clearing: {tor_dir}")
+                    # Safer cleanup - only specific files
+                    subprocess.run(['find', tor_dir, '-name', 'state', '-delete'], 
+                                 capture_output=True, timeout=5)
+                    subprocess.run(['find', tor_dir, '-name', 'cached-*', '-delete'], 
+                                 capture_output=True, timeout=5)
+                    subprocess.run(['find', tor_dir, '-name', 'lock', '-delete'], 
+                                 capture_output=True, timeout=5)
+                except (subprocess.TimeoutExpired, OSError):
+                    print(f"⚠️ Could not clean {tor_dir} - continuing anyway")
+        
+        # Restart Tor service
+        print("🚀 Starting fresh Tor service...")
+        result = subprocess.run(['brew', 'services', 'start', 'tor'], 
+                              capture_output=True, text=True, timeout=15)
+        if result.returncode == 0:
+            print("✅ Tor service started successfully")
+        else:
+            print(f"⚠️ Tor start result: {result.stderr}")
+        
+        # Wait for Tor to bootstrap
+        print("⏳ Waiting for Tor to bootstrap (10 seconds)...")
+        for i in range(10):
+            time.sleep(1)
+            if i % 3 == 0:
+                print(f"   {10-i} seconds remaining...")
+        
+        print("🎉 Tor connection reset completed!")
+        print("🔄 Fresh circuits and IP address should be available")
+        print("💡 Use option 6 to test the new connection")
+        
+    except subprocess.TimeoutExpired:
+        print("⚠️ Operation timed out - Tor reset may be incomplete")
+        print("💡 Try running 'brew services restart tor' manually")
+    except Exception as e:
+        print(f"❌ Error during Tor reset: {e}")
+        print("\n💡 Manual reset commands:")
+        print("1. brew services restart tor")
+        print("2. brew services stop tor && brew services start tor")
+    
+    input("\nPress Enter to continue...")
+
+
 def main_menu():
     """Display the main menu and handle user selections"""
     while True:
@@ -927,11 +1013,12 @@ def main_menu():
         print("4. ⚙️  Browser Configuration")
         print("5. 📋 Show Current Configuration")
         print("6. 🧪 Simple Tor Test")
-        print("7. 🚪 Exit")
+        print("7. � Reset Tor Connection")
+        print("8. �🚪 Exit")
         print()
         
         try:
-            choice = input("Select option (1-7): ").strip()
+            choice = input("Select option (1-8): ").strip()
             
             if choice == '1':
                 custom_url_test()
@@ -946,11 +1033,13 @@ def main_menu():
             elif choice == '6':
                 simple_tor_test()
             elif choice == '7':
+                reset_tor_connection()
+            elif choice == '8':
                 clear_screen()
                 print("👋 Goodbye!")
                 break
             else:
-                print("❌ Invalid choice! Please select 1-7.")
+                print("❌ Invalid choice! Please select 1-8.")
                 time.sleep(1)
                 
         except KeyboardInterrupt:
